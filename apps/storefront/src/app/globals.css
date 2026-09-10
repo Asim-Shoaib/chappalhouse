@@ -63,6 +63,25 @@
   --dur-fast: 180ms;
   --dur-mid: 380ms;
   --dur-slow: 720ms;
+
+  /* Glass — for surfaces that genuinely float over content: the sticky
+     header, overlays sitting on a photo, the cart bar pinned above the page.
+     A panel resting IN the page (a product card, a form field) gets a solid
+     --paper-raised instead; frosting something with nothing behind it just
+     lowers contrast for no depth cue.
+
+     --glass-tint stays close to the page colour so the warm palette survives
+     the blur, and every glass surface pairs the blur with a hairline
+     top highlight, which is what actually reads as glass rather than as a
+     translucent rectangle. */
+  --glass-tint: color-mix(in srgb, var(--paper) 72%, transparent);
+  --glass-tint-strong: color-mix(in srgb, var(--paper) 86%, transparent);
+  --glass-blur: 14px;
+  --glass-blur-sm: 8px;
+  --glass-edge: color-mix(in srgb, #ffffff 55%, transparent);
+  --glass-line: color-mix(in srgb, var(--line) 70%, transparent);
+  --glass-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent),
+    0 8px 28px -12px color-mix(in srgb, var(--ink) 18%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -102,6 +121,17 @@
     --on-invert: #f6ede0;
     --on-accent: #fff8f4;
     --accent-surface: #8d2a39;
+
+    /* Glass inverts too. On a dark ground the tint has to be denser or text
+       loses contrast against whatever scrolls beneath, and the edge highlight
+       drops to a whisper — a bright rim on dark glass reads as a mistake. The
+       ambient shadow goes black rather than ink-tinted, since a warm shadow on
+       a dark page is invisible. */
+    --glass-tint: color-mix(in srgb, var(--paper) 82%, transparent);
+    --glass-tint-strong: color-mix(in srgb, var(--paper) 92%, transparent);
+    --glass-edge: color-mix(in srgb, #ffffff 10%, transparent);
+    --glass-line: color-mix(in srgb, var(--line) 85%, transparent);
+    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -14px rgb(0 0 0 / 0.6);
   }
 }
 
@@ -109,6 +139,29 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* Frosted surfaces carry a hairline top highlight — that catch of light is
+   what reads as glass rather than as a translucent rectangle. Applied via
+   ::before so the host element keeps its own background and border. */
+.site-header::after,
+.order-summary::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--glass-edge) 18%,
+    var(--glass-edge) 82%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.site-header::after {
+  inset: auto 0 -1px;
 }
 
 html {
@@ -194,12 +247,48 @@ img {
 
 /* --- header ------------------------------------------------------------ */
 
+/* The header sits over the page as it scrolls, so it frosts rather than
+   painting solid — the product photography reads through it and the page
+   feels continuous. Tint is the strong one: navigation has to stay legible
+   over a dark hero image, not just over paper. */
 .site-header {
-  border-bottom: 1px solid var(--line);
-  background: var(--paper);
+  border-bottom: 1px solid var(--glass-line);
+  background: var(--glass-tint-strong);
   position: sticky;
   top: 0;
   z-index: 10;
+  /* Anchors the ::after highlight; sticky already creates a containing block
+     but relative makes the intent explicit. */
+  isolation: isolate;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .site-header {
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header {
+    background: var(--paper);
+  }
+}
+
+/* Some people enable "reduce transparency" at the OS level precisely because
+   blur makes text harder to read. Honour it: solid surface, no highlight. */
+@media (prefers-reduced-transparency: reduce) {
+  .site-header,
+  .order-summary {
+    background: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .site-header::after,
+  .order-summary::before {
+    display: none;
+  }
 }
 
 .header-inner {
@@ -494,10 +583,12 @@ img {
   height: 40px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--glass-line);
   border-radius: 50%;
-  background: color-mix(in srgb, var(--paper) 82%, transparent);
-  backdrop-filter: blur(8px);
+  background: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.5);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.5);
+  box-shadow: var(--glass-shadow);
   color: var(--ink);
   cursor: pointer;
   opacity: 0;
@@ -537,8 +628,9 @@ img {
   margin: 0;
   padding: 4px 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--paper) 82%, transparent);
-  backdrop-filter: blur(8px);
+  background: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.5);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.5);
   font-size: var(--text-2xs);
   letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
@@ -1212,13 +1304,30 @@ img {
   white-space: nowrap;
 }
 
+/* Sticky, so cart lines scroll behind it — glass keeps the total legible
+   while showing there is more list underneath. */
 .order-summary {
   position: sticky;
   top: 104px;
   padding: var(--space-md);
-  border: 1px solid var(--line);
-  background: var(--paper-raised);
+  border: 1px solid var(--glass-line);
+  background: var(--glass-tint-strong);
+  box-shadow: var(--glass-shadow);
 }
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .order-summary {
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .order-summary {
+    background: var(--paper-raised);
+  }
+}
+
 
 .order-summary h2 {
   margin: 0 0 var(--space-sm);

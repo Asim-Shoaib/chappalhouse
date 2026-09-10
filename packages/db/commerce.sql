@@ -195,7 +195,11 @@ begin
     order by p.slug, v.size for update of v
   loop
     v_count := v_count + 1;
-    if v_line.quantity not between 1 and 5 or v_line.stock_qty < v_line.quantity then raise exception 'out of stock: %, size %', v_line.slug, v_line.size; end if;
+    -- Quantity is capped, but a short count is not a reason to refuse the
+    -- order: restocking a size takes a day or two and the shortfall is settled
+    -- in the WhatsApp confirmation. The ledger still records the movement, so
+    -- stock_qty may legitimately go negative between order and resupply.
+    if v_line.quantity not between 1 and 5 then raise exception 'invalid quantity for %, size %', v_line.slug, v_line.size; end if;
     v_subtotal := v_subtotal + v_line.price_paisa * v_line.quantity;
   end loop;
   if v_count <> jsonb_array_length(p_items) then raise exception 'product or size unavailable'; end if;

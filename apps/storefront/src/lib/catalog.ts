@@ -9,8 +9,6 @@ export {
   formatPkr,
   imageUrl,
   thumbUrl,
-  inStock,
-  totalStock,
   categoryLabel,
 } from './product'
 

@@ -18,7 +18,17 @@ describe('checkout', () => {
     expect(() => parseCheckoutInput({ ...payload, items: [payload.items[0], payload.items[0]] })).toThrow('Duplicate')
   })
 
-  it('uses the server price and live stock', () => {
+  it('uses the server price, not the price the client sent', () => {
     expect(priceCheckout(products, parseCheckoutInput(payload))).toEqual({ items: [{ slug: 'classic', size: 37, quantity: 1, unitPricePaisa: 85000 }], subtotalPaisa: 85000 })
+  })
+
+  it('prices an order that exceeds the recorded count', () => {
+    const scarce: Product[] = [{ ...products[0], variants: [{ size: 37, stockQty: 0 }] }]
+    expect(priceCheckout(scarce, parseCheckoutInput(payload))).toMatchObject({ subtotalPaisa: 85000 })
+  })
+
+  it('rejects a size the product does not list', () => {
+    const input = parseCheckoutInput({ ...payload, items: [{ slug: 'classic', size: 41, quantity: 1 }] })
+    expect(() => priceCheckout(products, input)).toThrow('no longer available')
   })
 })

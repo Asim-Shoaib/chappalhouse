@@ -35,7 +35,10 @@ create table variants (
   id          uuid primary key default gen_random_uuid(),
   product_id  uuid not null references products (id) on delete cascade,
   size        smallint not null check (size between 35 and 45),
-  stock_qty   integer not null default 0 check (stock_qty >= 0),
+  -- May go negative. Orders are accepted regardless of the count (restocking
+  -- is quick), so a sale can precede the resupply that covers it. A negative
+  -- value is the reorder signal, not an error.
+  stock_qty   integer not null default 0,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now(),
   unique (product_id, size)

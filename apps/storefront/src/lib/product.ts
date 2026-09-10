@@ -24,18 +24,14 @@ export const formatPkr = (paisa: number) =>
 export const imageUrl = (name: string) => `/products/${name}.webp`
 export const thumbUrl = (name: string) => `/products/${name}-thumb.webp`
 
-// Availability is not modelled on the storefront. Restocking a size takes a
-// day or two, so a "sold out" badge turns a short wait into a lost sale — the
-// buyer leaves instead of asking. Every listed size is orderable, and the
-// WhatsApp sizing conversation is where a genuine gap gets handled.
+// Availability is deliberately not modelled on the storefront. Restocking a
+// size takes a day or two, so a "sold out" badge turns a short wait into a
+// lost sale — the buyer leaves instead of asking. Every listed size is
+// orderable, and a genuine gap is handled in the WhatsApp conversation.
 //
-// `stockQty` stays on the type: checkout and the cart still reserve against
-// real numbers once Supabase is live. This is a display decision, not an
-// inventory one.
-export const inStock = (_p: Product) => true
-
-export const totalStock = (p: Product) =>
-  p.variants.reduce((sum, v) => sum + v.stockQty, 0)
+// `stockQty` stays on the type because the ledger in packages/db still tracks
+// real counts for reordering. Nothing in the storefront reads it to decide
+// what a customer may buy.
 
 export const categoryLabel = (c: Category) =>
   c === 'khussa' ? 'Khussa' : 'Chappal'

@@ -1,4 +1,4 @@
-import { inStock, type Product } from './product'
+import { type Product } from './product'
 
 export function recommendProducts(
   products: Product[],
@@ -6,7 +6,7 @@ export function recommendProducts(
   limit = 4,
 ) {
   return products
-    .filter((product) => product.slug !== current.slug && inStock(product))
+    .filter((product) => product.slug !== current.slug)
     .map((product) => ({
       product,
       score:
