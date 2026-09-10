@@ -1,0 +1,96 @@
+{
+  "_comment": "Batch-2 products, grouped by reading the contact sheets in .contact-sheets-batch2/. Boundaries come from where the shoe visibly changes between consecutive frames, so the image lists are observed, not guessed. `name` is descriptive placeholder text and `counts` is empty on purpose: neither is recoverable from a photograph. Both must be filled from the stock sheet before these enter data/catalog.json — a name is a merchandising decision and a size count is a promise to a customer.",
+  "_source_range": "img_4353 - img_4493 (110 photos, 10 contact sheets)",
+  "products": [
+    {
+      "slug": "nude-braided-slide",
+      "descriptive_name": "Nude braided slide, low block heel",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4353", "img_4354", "img_4355", "img_4356", "img_4357", "img_4358", "img_4359", "img_4360", "img_4361", "img_4362"],
+      "has_model": true,
+      "notes": "Wide woven vamp, squared toe, ~2cm covered heel. Insole branded. 3D mesh already built for this slug."
+    },
+    {
+      "slug": "mint-embroidered-khussa",
+      "descriptive_name": "Mint mesh khussa, floral embroidery",
+      "category": "khussa",
+      "counts": {},
+      "images": ["img_4366", "img_4367", "img_4368", "img_4369", "img_4370", "img_4371", "img_4372", "img_4373", "img_4374", "img_4375", "img_4376", "img_4377", "img_4378", "img_4379", "img_4380", "img_4381", "img_4382", "img_4383", "img_4384", "img_4385", "img_4386", "img_4388"],
+      "has_model": true,
+      "notes": "Sheer mint mesh upper, gold and white floral thread, pointed curled toe, flat. B.Fit insole brand. 3D mesh already built for this slug."
+    },
+    {
+      "slug": "pink-ring-slide",
+      "descriptive_name": "Pink slide with gold ring",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4389", "img_4390", "img_4392", "img_4393", "img_4394", "img_4395", "img_4396", "img_4397", "img_4398", "img_4399", "img_4400"],
+      "has_model": false,
+      "notes": "Pale pink caged straps, gold O-ring at centre, squared toe, flat."
+    },
+    {
+      "slug": "pink-bow-slide",
+      "descriptive_name": "Pink bow slide",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4401", "img_4402", "img_4405", "img_4406", "img_4407", "img_4408", "img_4409", "img_4410", "img_4411", "img_4412"],
+      "has_model": false,
+      "notes": "Soft pink single band gathered into a bow, low heel. I.B.R branded strap. Size 38 legible on one sole photo."
+    },
+    {
+      "slug": "tan-ruched-crystal-slide",
+      "descriptive_name": "Tan ruched slide with crystal strap",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4413", "img_4414", "img_4415", "img_4418", "img_4419", "img_4420", "img_4421", "img_4422", "img_4424"],
+      "has_model": false,
+      "notes": "Tan ruched vamp with a crystal-set band across it, low block heel. I.B.R insole."
+    },
+    {
+      "slug": "black-pearl-toe-post",
+      "descriptive_name": "Black pearl toe-post sandal",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4425", "img_4426", "img_4428", "img_4429", "img_4430", "img_4431", "img_4432", "img_4433", "img_4434"],
+      "has_model": false,
+      "notes": "Black flat toe-post with pearl and stone detail along both straps. Metro branded insole."
+    },
+    {
+      "slug": "cream-braided-slide",
+      "descriptive_name": "Cream braided slide",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4435", "img_4436", "img_4438", "img_4441", "img_4442", "img_4444", "img_4445", "img_4446", "img_4447"],
+      "has_model": false,
+      "notes": "Same braided construction as the nude, in cream. Squared toe, low heel. STYLE branded strap."
+    },
+    {
+      "slug": "teal-bow-slide",
+      "descriptive_name": "Teal suede bow slide",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4448", "img_4449", "img_4455", "img_4457", "img_4458", "img_4459", "img_4460", "img_4461", "img_4462", "img_4463", "img_4464"],
+      "has_model": false,
+      "notes": "Teal suede-finish upper with a twisted bow across cut-out straps, low heel. I.B.K Collection insole."
+    },
+    {
+      "slug": "red-rainbow-slide",
+      "descriptive_name": "Red slide with multicolour bands",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4465", "img_4467", "img_4472", "img_4474", "img_4475", "img_4476", "img_4477", "img_4478", "img_4479", "img_4480"],
+      "has_model": false,
+      "notes": "Red footbed, stacked multicolour tubular straps across the vamp, low heel. I.B.R branded."
+    },
+    {
+      "slug": "white-silver-braid-slide",
+      "descriptive_name": "White slide with silver braid straps",
+      "category": "chappal",
+      "counts": {},
+      "images": ["img_4482", "img_4483", "img_4485", "img_4488", "img_4489", "img_4490", "img_4491", "img_4492", "img_4493"],
+      "has_model": false,
+      "notes": "White footbed, crossed silver braided straps, flat. Size 39 legible on the sole photo. I.B.R Collection insole."
+    }
+  ]
+}

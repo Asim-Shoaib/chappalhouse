@@ -1,0 +1,675 @@
+[
+  {
+    "name": "Straight Pink",
+    "slug": "straight-pink",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "38": 2
+    },
+    "total": 3,
+    "images": [
+      "img_3123",
+      "img_3124"
+    ]
+  },
+  {
+    "name": "Bow Pink",
+    "slug": "bow-pink",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "38": 2,
+      "39": 2,
+      "40": 1
+    },
+    "total": 6,
+    "images": [
+      "img_3132",
+      "img_3133",
+      "img_3134"
+    ]
+  },
+  {
+    "name": "Braids Pink",
+    "slug": "braids-pink",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "38": 1,
+      "40": 2
+    },
+    "total": 4,
+    "images": [
+      "img_3105",
+      "img_3113"
+    ]
+  },
+  {
+    "name": "Silver Fancy",
+    "slug": "silver-fancy",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_3135",
+      "img_3136"
+    ]
+  },
+  {
+    "name": "Golden Fancy",
+    "slug": "golden-fancy",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "38": 2,
+      "39": 1,
+      "40": 2
+    },
+    "total": 6,
+    "images": [
+      "img_3125",
+      "img_3126"
+    ]
+  },
+  {
+    "name": "White fancy",
+    "slug": "white-fancy",
+    "category": "chappal",
+    "counts": {
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 3,
+    "images": [
+      "img_3127",
+      "img_3128",
+      "img_3129"
+    ]
+  },
+  {
+    "name": "Brown Braids",
+    "slug": "brown-braids",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "38": 2,
+      "39": 3
+    },
+    "total": 6,
+    "images": [
+      "img_3108",
+      "img_3109",
+      "img_3112"
+    ]
+  },
+  {
+    "name": "Black Bow",
+    "slug": "black-bow",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "38": 1,
+      "39": 2
+    },
+    "total": 4,
+    "images": [
+      "img_3102",
+      "img_3103",
+      "img_3104",
+      "img_3114"
+    ]
+  },
+  {
+    "name": "Black Braids",
+    "slug": "black-braids",
+    "category": "chappal",
+    "counts": {
+      "39": 1
+    },
+    "total": 1,
+    "images": [
+      "img_3230",
+      "img_3232",
+      "img_3233"
+    ]
+  },
+  {
+    "name": "Cream Butterfly",
+    "slug": "cream-butterfly",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "38": 1,
+      "39": 2,
+      "40": 2
+    },
+    "total": 6,
+    "images": [
+      "img_3137",
+      "img_3138"
+    ]
+  },
+  {
+    "name": "Cream Braids",
+    "slug": "cream-braids",
+    "category": "chappal",
+    "counts": {
+      "37": 2,
+      "38": 1,
+      "40": 2
+    },
+    "total": 5,
+    "images": [
+      "img_3130",
+      "img_3131"
+    ]
+  },
+  {
+    "name": "Purple Braids",
+    "slug": "purple-braids",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 2
+    },
+    "total": 5,
+    "images": [
+      "img_3119",
+      "img_3120"
+    ]
+  },
+  {
+    "name": "Mustard Braids",
+    "slug": "mustard-braids",
+    "category": "chappal",
+    "counts": {
+      "37": 2,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_3117",
+      "img_3118"
+    ]
+  },
+  {
+    "name": "Red Multi",
+    "slug": "red-multi",
+    "category": "chappal",
+    "counts": {
+      "37": 2,
+      "38": 1,
+      "39": 1,
+      "40": 2
+    },
+    "total": 6,
+    "images": [
+      "img_3121",
+      "img_3122"
+    ]
+  },
+  {
+    "name": "Sea Green Bow",
+    "slug": "sea-green-bow",
+    "category": "chappal",
+    "counts": {
+      "37": 2,
+      "38": 1,
+      "40": 2
+    },
+    "total": 5,
+    "images": [
+      "img_3115",
+      "img_3116"
+    ]
+  },
+  {
+    "name": "Brown Sandal",
+    "slug": "brown-sandal",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "38": 2,
+      "39": 1,
+      "40": 1,
+      "41": 1
+    },
+    "total": 6,
+    "images": [
+      "img_3139",
+      "img_3140",
+      "img_3141",
+      "img_3142"
+    ]
+  },
+  {
+    "name": "Dark Brown",
+    "slug": "dark-brown",
+    "category": "chappal",
+    "counts": {
+      "37": 1,
+      "40": 1
+    },
+    "total": 2,
+    "images": [
+      "img_3225",
+      "img_3228",
+      "img_3229"
+    ]
+  },
+  {
+    "name": "Blusih Grey Sandal",
+    "slug": "blusih-grey-sandal",
+    "category": "chappal",
+    "counts": {
+      "38": 1,
+      "39": 1,
+      "40": 1,
+      "41": 1
+    },
+    "total": 4,
+    "images": [
+      "img_3143",
+      "img_3144",
+      "img_3145",
+      "img_3146",
+      "img_3147"
+    ]
+  },
+  {
+    "name": "Pink",
+    "slug": "pink",
+    "category": "khussa",
+    "counts": {
+      "36": 1,
+      "37": 1
+    },
+    "total": 2,
+    "images": [
+      "img_3182",
+      "img_3183",
+      "img_3184",
+      "img_3185",
+      "img_3186",
+      "img_3187",
+      "img_3188",
+      "img_3189",
+      "img_3191",
+      "img_3192",
+      "img_3193",
+      "img_3194",
+      "img_3195",
+      "img_3196",
+      "img_3197"
+    ]
+  },
+  {
+    "name": "White",
+    "slug": "white",
+    "category": "khussa",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_3148",
+      "img_3149",
+      "img_3150",
+      "img_3151",
+      "img_3152",
+      "img_3153",
+      "img_3154",
+      "img_3155",
+      "img_3156",
+      "img_3157",
+      "img_3158",
+      "img_3159",
+      "img_3160",
+      "img_3161",
+      "img_3162",
+      "img_3163",
+      "img_3164",
+      "img_3165",
+      "img_3166",
+      "img_3167"
+    ]
+  },
+  {
+    "name": "Classic",
+    "slug": "classic",
+    "category": "khussa",
+    "counts": {
+      "37": 1
+    },
+    "total": 1,
+    "images": [
+      "img_3198",
+      "img_3199",
+      "img_3200",
+      "img_3201",
+      "img_3202",
+      "img_3203",
+      "img_3204",
+      "img_3205",
+      "img_3206",
+      "img_3207",
+      "img_3208",
+      "img_3209",
+      "img_3210",
+      "img_3211"
+    ]
+  },
+  {
+    "name": "Net",
+    "slug": "net",
+    "category": "khussa",
+    "counts": {
+      "36": 1
+    },
+    "total": 1,
+    "images": [
+      "img_2107"
+    ]
+  },
+  {
+    "name": "Mahroon",
+    "slug": "mahroon",
+    "category": "khussa",
+    "counts": {
+      "36": 1,
+      "37": 1
+    },
+    "total": 2,
+    "images": [
+      "img_3168",
+      "img_3170",
+      "img_3171",
+      "img_3172",
+      "img_3173",
+      "img_3174",
+      "img_3175",
+      "img_3176",
+      "img_3177",
+      "img_3178",
+      "img_3179",
+      "img_3180",
+      "img_3181"
+    ]
+  },
+  {
+    "name": "Nude Braided Slide",
+    "slug": "nude-braided-slide",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4353",
+      "img_4354",
+      "img_4355",
+      "img_4356",
+      "img_4357",
+      "img_4358",
+      "img_4359",
+      "img_4360",
+      "img_4361",
+      "img_4362"
+    ]
+  },
+  {
+    "name": "Mint Embroidered Khussa",
+    "slug": "mint-embroidered-khussa",
+    "category": "khussa",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4366",
+      "img_4367",
+      "img_4368",
+      "img_4369",
+      "img_4370",
+      "img_4371",
+      "img_4372",
+      "img_4373",
+      "img_4374",
+      "img_4375",
+      "img_4376",
+      "img_4377",
+      "img_4378",
+      "img_4379",
+      "img_4380",
+      "img_4381",
+      "img_4382",
+      "img_4383",
+      "img_4384",
+      "img_4385",
+      "img_4386",
+      "img_4388"
+    ]
+  },
+  {
+    "name": "Pink Ring Slide",
+    "slug": "pink-ring-slide",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4389",
+      "img_4390",
+      "img_4392",
+      "img_4393",
+      "img_4394",
+      "img_4395",
+      "img_4396",
+      "img_4397",
+      "img_4398",
+      "img_4399",
+      "img_4400"
+    ]
+  },
+  {
+    "name": "Pink Bow Slide",
+    "slug": "pink-bow-slide",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4401",
+      "img_4402",
+      "img_4405",
+      "img_4406",
+      "img_4407",
+      "img_4408",
+      "img_4409",
+      "img_4410",
+      "img_4411",
+      "img_4412"
+    ]
+  },
+  {
+    "name": "Tan Crystal Slide",
+    "slug": "tan-ruched-crystal-slide",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4413",
+      "img_4414",
+      "img_4415",
+      "img_4418",
+      "img_4419",
+      "img_4420",
+      "img_4421",
+      "img_4422",
+      "img_4424"
+    ]
+  },
+  {
+    "name": "Black Pearl Sandal",
+    "slug": "black-pearl-toe-post",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4425",
+      "img_4426",
+      "img_4428",
+      "img_4429",
+      "img_4430",
+      "img_4431",
+      "img_4432",
+      "img_4433",
+      "img_4434"
+    ]
+  },
+  {
+    "name": "Cream Braided Slide",
+    "slug": "cream-braided-slide",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4435",
+      "img_4436",
+      "img_4438",
+      "img_4441",
+      "img_4442",
+      "img_4444",
+      "img_4445",
+      "img_4446",
+      "img_4447"
+    ]
+  },
+  {
+    "name": "Teal Bow Slide",
+    "slug": "teal-bow-slide",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4448",
+      "img_4449",
+      "img_4455",
+      "img_4457",
+      "img_4458",
+      "img_4459",
+      "img_4460",
+      "img_4461",
+      "img_4462",
+      "img_4463",
+      "img_4464"
+    ]
+  },
+  {
+    "name": "Red Rainbow Slide",
+    "slug": "red-rainbow-slide",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4465",
+      "img_4467",
+      "img_4472",
+      "img_4474",
+      "img_4475",
+      "img_4476",
+      "img_4477",
+      "img_4478",
+      "img_4479",
+      "img_4480"
+    ]
+  },
+  {
+    "name": "White Silver Braid Slide",
+    "slug": "white-silver-braid-slide",
+    "category": "chappal",
+    "counts": {
+      "36": 1,
+      "37": 1,
+      "38": 1,
+      "39": 1,
+      "40": 1
+    },
+    "total": 5,
+    "images": [
+      "img_4482",
+      "img_4483",
+      "img_4485",
+      "img_4488",
+      "img_4489",
+      "img_4490",
+      "img_4491",
+      "img_4492",
+      "img_4493"
+    ]
+  }
+]

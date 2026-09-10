@@ -1,0 +1,26 @@
+{
+  "name": "chappal-house",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace=@chappal/storefront",
+    "build": "npm run build --workspace=@chappal/storefront",
+    "start": "npm run start --workspace=@chappal/storefront",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "stock:import": "node scripts/import-stock.mjs",
+    "images:process": "node scripts/process-images.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  }
+}

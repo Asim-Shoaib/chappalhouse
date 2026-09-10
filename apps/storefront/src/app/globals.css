@@ -1,0 +1,1922 @@
+/* Chappal House — base styles.
+   Palette is warm and earthy: leather tan, deep maroon, unbleached cream.
+   Drawn from the product itself rather than a generic e-commerce blue. */
+
+:root {
+  --paper: #faf6f0;
+  --paper-raised: #ffffff;
+  --ink: #23190f;
+  --ink-soft: #6b5b4a;
+  --line: #e4dace;
+  --accent: #7c2230;
+  --accent-soft: #a8404f;
+  --tan: #b8814a;
+  --ok: #2f6b46;
+
+  /* Surfaces that stay dark in BOTH themes, with the text colour that always
+     sits on them. --ink/--paper swap between themes, so anything that wants a
+     deliberate inversion (the story band, a filled button) cannot be built
+     from them — it would invert right back in dark mode. These four do not
+     swap, so an inverted panel reads the same in both. */
+  --invert-surface: #23190f;
+  --on-invert: #faf6f0;
+  --on-accent: #fff8f4;
+  --accent-surface: #7c2230;
+
+  --radius: 3px;
+  --shell: 1180px;
+
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Type scale — fluid, ratio 1.25 (major third). Each step interpolates
+     between a 360px phone and a 1440px desktop, so nothing needs a media
+     query to resize. Use these, never a raw px or rem font-size. */
+  --text-2xs: clamp(0.6875rem, 0.67rem + 0.08vw, 0.75rem);
+  --text-xs: clamp(0.75rem, 0.73rem + 0.1vw, 0.8125rem);
+  --text-sm: clamp(0.875rem, 0.85rem + 0.12vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --text-md: clamp(1.125rem, 1.08rem + 0.22vw, 1.25rem);
+  --text-lg: clamp(1.375rem, 1.28rem + 0.42vw, 1.625rem);
+  --text-xl: clamp(1.75rem, 1.55rem + 0.88vw, 2.25rem);
+  --text-2xl: clamp(2.25rem, 1.9rem + 1.55vw, 3.25rem);
+  --text-3xl: clamp(2.75rem, 2.1rem + 2.9vw, 4.5rem);
+
+  /* Space scale — same base unit as type so rhythm stays coherent.
+     Section padding lives at --space-2xl and up; the page must breathe. */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  --space-2xl: clamp(3.5rem, 2.6rem + 3.6vw, 6rem);
+  --space-3xl: clamp(5rem, 3.4rem + 6.4vw, 9rem);
+
+  --measure: 62ch;
+
+  /* Motion — mass and settle, never linear. Every transition uses one of
+     these three curves so the whole site moves as one system. */
+  --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 180ms;
+  --dur-mid: 380ms;
+  --dur-slow: 720ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur-mid: 1ms;
+    --dur-slow: 1ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14100c;
+    --paper-raised: #1e1811;
+    --ink: #f2e9dc;
+    --ink-soft: #a8967f;
+    --line: #332a20;
+    --accent: #d4737f;
+    --accent-soft: #e0919b;
+    --tan: #c99a63;
+    --ok: #5faa7c;
+
+    /* The inverted panel lifts off the page rather than dropping into it —
+       on a dark ground a darker band would just read as a hole. The accent
+       surface stays deep so white text on it keeps its contrast; only the
+       lighter --accent is used for text and borders in this theme. */
+    --invert-surface: #2b2219;
+    --on-invert: #f6ede0;
+    --on-accent: #fff8f4;
+    --accent-surface: #8d2a39;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Film grain. Fixed and pointer-events:none so it never repaints with scroll —
+   attaching noise to a scrolling container tanks mobile frame rates. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-color-scheme: dark) {
+  body::after {
+    opacity: 0.045;
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--space-xs);
+  left: var(--space-xs);
+  z-index: 70;
+  padding: 8px 12px;
+  background: var(--invert-surface);
+  color: var(--on-invert);
+  font-size: var(--text-sm);
+  transform: translateY(-150%);
+  transition: transform var(--dur-fast) var(--ease-out-soft);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.shell {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding-inline: var(--space-md);
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- header ------------------------------------------------------------ */
+
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-inner {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-block: var(--space-md);
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-size: var(--text-lg);
+  letter-spacing: 0.01em;
+}
+
+.nav {
+  display: flex;
+  gap: clamp(16px, 3vw, 28px);
+  font-size: var(--text-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nav a {
+  color: var(--ink-soft);
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+}
+
+.nav a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.nav a:active {
+  transform: translateY(1px);
+}
+
+/* --- hero -------------------------------------------------------------- */
+
+.hero {
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.hero-inner {
+  display: grid;
+  gap: 40px;
+  padding-block: var(--space-2xl);
+  align-items: center;
+}
+
+@media (min-width: 880px) {
+  .hero-inner {
+    grid-template-columns: 1fr 0.85fr;
+    gap: var(--space-xl);
+    padding-block: var(--space-3xl);
+  }
+}
+
+.hero h1 {
+  font-family: var(--serif);
+  font-size: var(--text-3xl);
+  line-height: 1.04;
+  margin: 0 0 22px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.hero-copy p {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--ink-soft);
+  font-size: var(--text-base);
+}
+
+.hero-copy > p:not(.eyebrow) {
+  text-wrap: pretty;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.button-quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.button-quiet:hover {
+  background: transparent;
+  border-color: var(--tan);
+}
+
+/* Slight rotation and a warm ground plate keep the hero from reading like a
+   stock template block. The photo is portrait, so the frame crops upward for
+   the same reason the cards do. */
+.hero-figure {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  transform: rotate(-1.5deg);
+}
+
+.hero-figure::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, transparent 55%, rgba(0, 0, 0, 0.16));
+  pointer-events: none;
+}
+
+.hero-figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 42%;
+}
+
+.eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tan);
+  margin: 0 0 16px;
+}
+
+/* --- product grid ------------------------------------------------------ */
+
+.section {
+  padding-block: var(--space-2xl);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.section-head h2 {
+  font-family: var(--serif);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+  gap: var(--space-xl) var(--space-md);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-frame {
+  aspect-ratio: 1 / 1;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  transition: border-color var(--dur-fast) var(--ease-out-soft);
+}
+
+.card:hover .card-frame {
+  border-color: var(--tan);
+}
+
+.card-placeholder {
+  font-family: var(--serif);
+  font-size: var(--text-2xl);
+  color: var(--line);
+  user-select: none;
+}
+
+/* Photos are portrait and hand-held; the hand is part of the shot, not a defect
+   to crop around. A slight upward bias centres the shoe without cutting it. */
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 42%;
+  transition: transform var(--dur-slow) var(--ease-out-soft);
+}
+
+.card:hover .card-image {
+  transform: scale(1.04);
+}
+
+.card-name {
+  font-family: var(--serif);
+  font-size: var(--text-base);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.card-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--text-sm);
+  margin-top: -2px;
+}
+
+.price {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.stock-note {
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.stock-note[data-low='true'] {
+  color: var(--accent);
+}
+
+/* --- product detail ---------------------------------------------------- */
+
+.pdp {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  padding-block: var(--space-2xl);
+}
+
+@media (min-width: 860px) {
+  .pdp {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 64px;
+  }
+}
+
+.pdp-frame {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+/* Stacked so the outgoing and incoming images occupy the same box and can
+   cross-dissolve. Without this the exiting image is still in flow and pushes
+   the new one down. */
+.pdp-image-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* contain, not cover: the hand is holding the shoe, so cropping the frame
+   crops the product. Show the whole photo. */
+.pdp-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.gallery {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--dur-fast) var(--ease-out-soft),
+    border-color var(--dur-fast) var(--ease-out-soft);
+}
+
+.pdp-frame:hover .gallery-arrow,
+.gallery-arrow:focus-visible {
+  opacity: 1;
+}
+
+.gallery-arrow:hover {
+  border-color: var(--tan);
+}
+
+.gallery-arrow-prev {
+  left: var(--space-xs);
+}
+
+.gallery-arrow-next {
+  right: var(--space-xs);
+}
+
+/* Touch has no hover, so the arrows would never appear. */
+@media (hover: none) {
+  .gallery-arrow {
+    opacity: 1;
+  }
+}
+
+.gallery-count {
+  position: absolute;
+  bottom: var(--space-xs);
+  right: var(--space-xs);
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter: blur(8px);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: var(--space-2xs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--paper-raised);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out-soft),
+    opacity var(--dur-fast) var(--ease-out-soft);
+  opacity: 0.55;
+}
+
+.thumb:hover {
+  opacity: 0.85;
+}
+
+.thumb[data-active='true'] {
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+:where(button, a):focus-visible {
+  outline: 2px solid var(--tan);
+  outline-offset: 2px;
+}
+
+.pdp h1 {
+  font-family: var(--serif);
+  font-size: var(--text-2xl);
+  font-weight: 400;
+  margin: 0 0 8px;
+}
+
+.pdp-price {
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 28px;
+}
+
+.field-label {
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.field-hint {
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--tan);
+}
+
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.size-chip {
+  min-width: 56px;
+  padding: 11px 12px;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out-soft),
+    background var(--dur-fast) var(--ease-out-soft);
+}
+
+.size-chip:hover:not(:disabled) {
+  border-color: var(--tan);
+}
+
+.size-chip[data-selected='true'] {
+  border-color: var(--accent-surface);
+  background: var(--accent-surface);
+  color: var(--on-accent);
+}
+
+.size-chip[data-selected='true'] small {
+  color: var(--on-accent);
+  opacity: 0.8;
+}
+
+.size-chip:disabled {
+  color: var(--ink-soft);
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.size-chip small {
+  display: block;
+  font-size: var(--text-2xs);
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 28px;
+  background: var(--accent-surface);
+  color: var(--on-accent);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+  border: 1px solid var(--accent-surface);
+  transition:
+    background var(--dur-fast) var(--ease-out-soft),
+    border-color var(--dur-fast) var(--ease-out-soft),
+    transform var(--dur-fast) var(--ease-out-soft);
+}
+
+.button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.whatsapp-link,
+.quiet-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin-top: 12px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.whatsapp-link:hover,
+.quiet-link:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.cart-link span {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 520px) {
+  .header-inner {
+    align-items: center;
+    padding-block: var(--space-sm);
+  }
+
+  .wordmark {
+    font-size: var(--text-md);
+  }
+
+  .nav {
+    font-size: var(--text-2xs);
+    letter-spacing: 0.1em;
+  }
+
+  .hero-inner {
+    gap: var(--space-xl);
+  }
+
+  .hero-figure {
+    width: calc(100% - 12px);
+    margin-inline: auto;
+  }
+}
+
+.button-note {
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  margin: 10px 0 0;
+}
+
+.trust {
+  margin-top: 32px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  display: grid;
+  gap: 9px;
+  list-style: none;
+  padding-left: 0;
+}
+
+.trust li {
+  padding-left: 22px;
+  position: relative;
+}
+
+.trust li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tan);
+}
+
+/* --- footer ------------------------------------------------------------ */
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  margin-top: 72px;
+  background: var(--paper-raised);
+}
+
+.footer-inner {
+  padding-block: var(--space-xl);
+  font-size: var(--text-sm);
+  display: grid;
+  gap: 28px;
+}
+
+@media (min-width: 720px) {
+  .footer-inner {
+    grid-template-columns: 1fr auto;
+    gap: 48px;
+  }
+}
+
+.footer-mark {
+  font-family: var(--serif);
+  font-size: var(--text-md);
+  margin: 0 0 6px;
+}
+
+.site-footer p {
+  margin: 0;
+  max-width: 44ch;
+}
+
+.footer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+  color: var(--ink-soft);
+}
+
+.catalog-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--line);
+}
+
+.catalog-controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalog-controls select {
+  min-width: 150px;
+  padding: 10px 32px 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.catalog-result-count {
+  margin: 0 0 10px auto;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.empty-state {
+  padding: var(--space-xl);
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.empty-state h2,
+.empty-state p {
+  margin-top: 0;
+}
+
+.story-band {
+  padding-block: var(--space-3xl);
+  background: var(--invert-surface);
+  color: var(--on-invert);
+}
+
+.story-grid {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.5fr) minmax(0, 1fr);
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.story-band .eyebrow {
+  color: var(--tan);
+}
+
+.story-band h2 {
+  max-width: 18ch;
+  margin: 0 0 var(--space-md);
+  font-family: var(--serif);
+  font-size: var(--text-2xl);
+  font-weight: 400;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.story-band p:not(.eyebrow) {
+  max-width: 54ch;
+  margin: 0;
+  color: color-mix(in srgb, var(--on-invert) 72%, transparent);
+}
+
+.product-details {
+  display: grid;
+  gap: 1px;
+  margin-top: var(--space-xl);
+  border-top: 1px solid var(--line);
+}
+
+.product-details details,
+.info-page details {
+  border-bottom: 1px solid var(--line);
+}
+
+.product-details summary,
+.info-page summary {
+  cursor: pointer;
+  padding-block: var(--space-sm);
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+}
+
+.product-details details p,
+.info-page details p {
+  max-width: 58ch;
+  margin: 0 0 var(--space-sm);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.size-guide {
+  width: 100%;
+  max-width: 280px;
+  margin-bottom: var(--space-md);
+  border-collapse: collapse;
+  border-top: 1px solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.size-guide th,
+.size-guide td {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.size-guide th:last-child,
+.size-guide td:last-child {
+  text-align: right;
+}
+
+.info-page,
+.analytics-page {
+  padding-block: var(--space-3xl);
+}
+
+.info-page {
+  max-width: 760px;
+}
+
+.info-page h1,
+.analytics-page h1 {
+  margin: 0 0 var(--space-md);
+  font-family: var(--serif);
+  font-size: var(--text-3xl);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.info-page h2 {
+  margin: var(--space-xl) 0 var(--space-xs);
+  font-family: var(--serif);
+  font-size: var(--text-lg);
+  font-weight: 400;
+}
+
+.info-page p {
+  max-width: 62ch;
+  color: var(--ink-soft);
+}
+
+.info-page .lede {
+  margin-bottom: var(--space-2xl);
+  font-size: var(--text-md);
+}
+
+.analytics-page h1 {
+  margin-bottom: var(--space-xl);
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+}
+
+.metric,
+.analytics-panel {
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.metric {
+  display: grid;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+}
+
+.metric span {
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metric strong {
+  font-family: var(--serif);
+  font-size: var(--text-xl);
+  font-weight: 400;
+}
+
+.analytics-panel {
+  max-width: 620px;
+  margin-top: var(--space-xl);
+  padding: var(--space-md);
+}
+
+.analytics-panel h2 {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--serif);
+  font-size: var(--text-lg);
+  font-weight: 400;
+}
+
+.analytics-panel ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: var(--space-lg);
+}
+
+.analytics-panel li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  color: var(--ink-soft);
+}
+
+.analytics-panel strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- cart and checkout ------------------------------------------------- */
+
+.commerce-page {
+  padding-block: var(--space-3xl);
+}
+
+.commerce-page > h1,
+.commerce-head h1,
+.order-received h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--text-3xl);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.commerce-head {
+  margin-bottom: var(--space-xl);
+}
+
+.commerce-head p {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+}
+
+.commerce-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  gap: clamp(36px, 7vw, 80px);
+  align-items: start;
+}
+
+.cart-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  padding-block: var(--space-md);
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+
+.cart-image {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.cart-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-copy h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--text-md);
+  font-weight: 400;
+}
+
+.cart-copy p {
+  margin: 3px 0;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.cart-meta {
+  /* Size and unit price read as one quiet line under the name, not as a
+     stack of separate paragraphs competing with it. */
+  margin: var(--space-3xs) 0 0;
+}
+
+.cart-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+/* Segmented stepper. A native select for 1-5 units is a lot of chrome for a
+   number that is almost always 1, and it cannot be hit accurately on a phone. */
+.qty {
+  display: inline-grid;
+  grid-template-columns: 34px 2.5ch 34px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+.qty button {
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out-soft);
+}
+
+.qty button:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.qty button:disabled {
+  color: var(--line);
+  cursor: default;
+}
+
+.qty span {
+  text-align: center;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-remove {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  /* Underline on hover only: Remove is a destructive action and should not
+     pull the eye harder than Checkout. */
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out-soft);
+}
+
+.cart-remove:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cart-line-total {
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.order-summary {
+  position: sticky;
+  top: 104px;
+  padding: var(--space-md);
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.order-summary h2 {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--serif);
+  font-size: var(--text-lg);
+  font-weight: 400;
+}
+
+.order-summary dl {
+  margin: 0 0 var(--space-md);
+}
+
+.order-summary dl div,
+.order-summary li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-block: 7px;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.order-summary dd {
+  margin: 0;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.order-summary .order-total {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.order-summary .button {
+  justify-content: center;
+  width: 100%;
+}
+
+.order-summary ul {
+  margin: 0 0 var(--space-sm);
+  padding: 0 0 var(--space-sm);
+  border-bottom: 1px solid var(--line);
+  list-style: none;
+}
+
+.order-summary li span {
+  max-width: 20ch;
+}
+
+.commerce-empty {
+  margin-top: var(--space-xl);
+  padding: var(--space-xl);
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.checkout-form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.checkout-form fieldset {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: var(--space-md);
+  border: 1px solid var(--line);
+}
+
+.checkout-form legend {
+  padding-inline: 8px;
+  font-family: var(--serif);
+  font-size: var(--text-md);
+}
+
+.checkout-form label:not(.payment-option):not(.policy-check) {
+  display: grid;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.checkout-form label small {
+  font-size: var(--text-xs);
+}
+
+.checkout-form input:not([type='radio']):not([type='checkbox']),
+.checkout-form textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.checkout-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.payment-option:has(input:checked) {
+  border-color: var(--accent);
+}
+
+.payment-option input,
+.policy-check input {
+  accent-color: var(--accent);
+}
+
+.policy-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: var(--text-sm);
+}
+
+.policy-check a {
+  border-bottom: 1px solid var(--line);
+}
+
+.form-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--paper));
+  color: var(--accent);
+  font-size: var(--text-sm);
+}
+
+.admin-login {
+  display: grid;
+  gap: var(--space-sm);
+  max-width: 420px;
+}
+
+.admin-login label {
+  display: grid;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.admin-login input {
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.admin-login .button {
+  justify-self: start;
+}
+
+.order-received {
+  max-width: 720px;
+  padding-block: var(--space-3xl);
+}
+
+.order-received > p:not(.eyebrow) {
+  color: var(--ink-soft);
+}
+
+.order-reference {
+  margin-block: var(--space-lg);
+  padding: var(--space-sm);
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.receipts-page { padding-block: var(--space-2xl); }
+.receipts-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-md); margin-bottom: var(--space-xl); }
+.receipts-head h1 { margin: 0; font-family: var(--serif); font-size: var(--text-3xl); font-weight: 400; }
+.receipt-document { margin-bottom: var(--space-xl); padding: clamp(22px, 5vw, 52px); border: 1px solid var(--line); background: var(--paper-raised); }
+.receipt-previous { opacity: 0.82; }
+.receipt-header { display: flex; justify-content: space-between; gap: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--line); }
+.receipt-header p { margin: 0; color: var(--ink-soft); font-size: var(--text-sm); }
+.receipt-brand { color: var(--ink) !important; font-family: var(--serif); font-size: var(--text-lg) !important; }
+.receipt-header > div:last-child { display: grid; text-align: right; font-size: var(--text-sm); }
+.receipt-header span { color: var(--ink-soft); }
+.receipt-status { margin-block: var(--space-md); padding: var(--space-sm); border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--paper)); }
+.receipt-status p { margin: 3px 0 0; color: var(--ink-soft); font-size: var(--text-sm); }
+.receipt-delivery { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-block: var(--space-md); }
+.receipt-delivery h2, .receipt-notes h2 { margin: 0 0 5px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+.receipt-delivery p { margin: 0; color: var(--ink-soft); font-size: var(--text-sm); }
+.receipt-items { width: 100%; margin-block: var(--space-md); border-collapse: collapse; font-size: var(--text-sm); }
+.receipt-items th, .receipt-items td { padding: 9px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+.receipt-items th:first-child, .receipt-items td:first-child { padding-left: 0; text-align: left; }
+.receipt-totals { width: min(100%, 340px); margin: 0 0 var(--space-md) auto; }
+.receipt-totals div { display: flex; justify-content: space-between; padding-block: 5px; }
+.receipt-totals dd { margin: 0; font-variant-numeric: tabular-nums; }
+.receipt-grand-total { margin-top: 6px; padding-top: 11px !important; border-top: 1px solid var(--line); font-weight: 700; }
+.receipt-notes { padding-top: var(--space-md); border-top: 1px solid var(--line); }
+.receipt-notes ol { margin: 0; padding-left: 1.2rem; color: var(--ink-soft); font-size: var(--text-xs); }
+.receipt-privacy { color: var(--ink-soft); font-size: var(--text-xs); }
+
+@media print {
+  @page { margin: 12mm; }
+  .site-header, .site-footer, .receipts-head, .receipt-privacy { display: none !important; }
+  body { background: #fff; color: #111; }
+  body::before { display: none; }
+  .receipts-page { width: 100%; max-width: none; padding: 0; }
+  .receipt-document { break-after: page; margin: 0; padding: 0; border: 0; background: #fff; opacity: 1; }
+  .receipt-document:last-of-type { break-after: auto; }
+  .receipt-status { border-color: #111; background: transparent; }
+  .receipt-items th, .receipt-items td, .receipt-header, .receipt-notes, .receipt-grand-total { border-color: #bbb; }
+  .receipt-header p, .receipt-header span, .receipt-status p, .receipt-delivery p, .receipt-notes ol { color: #333; }
+}
+
+@media (max-width: 520px) {
+  .catalog-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .catalog-controls select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .catalog-result-count {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+
+  .story-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  .story-band h2 {
+    font-size: var(--text-xl);
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .header-inner {
+    align-items: center;
+  }
+
+  .hero-inner {
+    padding-block: var(--space-2xl);
+  }
+
+  .hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions .button,
+  .pdp .button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .hero-figure {
+    transform: rotate(-0.75deg);
+  }
+
+  .pdp {
+    gap: var(--space-xl);
+    padding-block: var(--space-xl);
+  }
+
+  .pdp-frame {
+    aspect-ratio: 4 / 5;
+  }
+
+  .pdp h1 {
+    font-size: var(--text-xl);
+    text-wrap: balance;
+  }
+
+  .gallery-arrow {
+    width: 44px;
+    height: 44px;
+  }
+
+  .thumbs {
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  }
+
+  .thumb {
+    min-height: 64px;
+  }
+
+  .size-chip {
+    min-width: 60px;
+    min-height: 48px;
+  }
+
+  .trust {
+    margin-top: var(--space-xl);
+  }
+
+  .footer-inner {
+    gap: var(--space-md);
+  }
+
+  .footer-list {
+    gap: var(--space-sm);
+  }
+
+  .commerce-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .order-summary {
+    position: static;
+  }
+
+  .checkout-form + .order-summary {
+    grid-row: 1;
+  }
+
+  .cart-item {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .cart-item > strong {
+    grid-column: 2;
+  }
+
+  .checkout-row {
+    grid-template-columns: 1fr;
+  }
+
+  .receipts-head, .receipt-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .receipt-header > div:last-child {
+    text-align: left;
+  }
+
+  .receipt-delivery {
+    grid-template-columns: 1fr;
+  }
+
+  .receipt-document {
+    padding: var(--space-md);
+  }
+
+  .receipt-items {
+    font-size: var(--text-xs);
+  }
+
+  .receipt-items th, .receipt-items td {
+    padding-inline: 3px;
+  }
+}
+
+/* 3D viewer — an optional second look at the shoe, offered under the gallery
+   for the products that have a verified mesh. */
+
+.pdp-media {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.model-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  align-self: start;
+  padding: var(--space-2xs) var(--space-sm);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out-soft),
+    color var(--dur-fast) var(--ease-out-soft);
+}
+
+.model-open:hover {
+  border-color: var(--tan);
+  color: var(--accent);
+}
+
+.model-viewer {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  overflow: hidden;
+}
+
+.model-stage {
+  /* Square-ish but never taller than the viewport on a phone, where the
+     gallery above already takes most of the fold. */
+  aspect-ratio: 4 / 3;
+  max-height: 70vh;
+  width: 100%;
+  /* Cursor signals the drag affordance before the hint text is read. */
+  cursor: grab;
+  touch-action: none;
+}
+
+.model-stage:active {
+  cursor: grabbing;
+}
+
+.model-status {
+  padding: 0 var(--space-sm) var(--space-2xs);
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+}
+
+.model-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-2xs) var(--space-sm);
+  border-top: 1px solid var(--line);
+}
+
+.model-hint {
+  color: var(--ink-soft);
+  font-size: var(--text-2xs);
+}
+
+.model-close {
+  padding: var(--space-3xs) var(--space-2xs);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out-soft);
+}
+
+.model-close:hover {
+  color: var(--accent);
+}
+
+/* Manual payment — Easypaisa / JazzCash / bank transfer */
+
+.payment-option span {
+  display: grid;
+  gap: 2px;
+}
+
+.payment-option small {
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+}
+
+.manual-pay {
+  margin: var(--space-2xs) 0 var(--space-sm);
+  padding: var(--space-sm);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.manual-pay-lede {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-sm);
+}
+
+.manual-pay ul,
+.transfer-accounts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.manual-pay li,
+.transfer-accounts li {
+  display: grid;
+  /* Label and holder sit either side of the number, which gets the room it
+     needs — an IBAN must never wrap mid-digit. */
+  grid-template-columns: 7rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--space-2xs) var(--space-sm);
+  padding-block: var(--space-2xs);
+  border-top: 1px solid var(--line);
+}
+
+.manual-pay li:first-child,
+.transfer-accounts li:first-child {
+  border-top: 0;
+}
+
+.manual-pay-label {
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.manual-pay code,
+.transfer-accounts code {
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+  font-size: var(--text-base);
+  /* Wide tracking so a buyer copying by hand does not misread a digit. */
+  letter-spacing: 0.04em;
+  word-break: break-all;
+  user-select: all;
+}
+
+.manual-pay-name {
+  grid-column: 2;
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+}
+
+.manual-pay-note,
+.transfer-window {
+  margin: var(--space-xs) 0 0;
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+}
+
+.transfer-ref {
+  padding: var(--space-2xs) var(--space-sm);
+  border-left: 2px solid var(--tan);
+  background: var(--paper-raised);
+}
+
+.transfer-accounts {
+  margin: var(--space-sm) 0;
+  padding: var(--space-sm);
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.transfer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+/* --- photo rail --------------------------------------------------------- */
+
+.photo-rail {
+  overflow: hidden;
+  padding-block: var(--space-2xl);
+  border-block: 1px solid var(--line);
+  /* Fade the ends so the strip reads as continuous rather than clipped. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+
+.photo-rail-track {
+  display: flex;
+  gap: var(--space-md);
+  width: max-content;
+  animation: rail 64s linear infinite;
+}
+
+/* Translating exactly -50% lands on the start of the duplicated half, so the
+   loop has no visible seam. Any other value would jump. */
+@keyframes rail {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.photo-rail:hover .photo-rail-track,
+.photo-rail:focus-within .photo-rail-track {
+  animation-play-state: paused;
+}
+
+.photo-rail-item {
+  position: relative;
+  flex: 0 0 auto;
+  width: 260px;
+}
+
+.photo-rail-item img {
+  width: 100%;
+  height: 325px;
+  object-fit: cover;
+  /* Same crop bias as the product cards, so a shoe sits at the same height
+     whether it appears in the rail or the grid. */
+  object-position: 50% 42%;
+  border-radius: var(--radius);
+  filter: saturate(0.94);
+  transition:
+    filter var(--dur-mid) var(--ease-out-soft),
+    transform var(--dur-mid) var(--ease-out-soft);
+}
+
+.photo-rail-item:hover img,
+.photo-rail-item:focus-visible img {
+  filter: saturate(1.05);
+  transform: translateY(-4px);
+}
+
+.photo-rail-name {
+  display: block;
+  margin-top: var(--space-2xs);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Motion off: fall back to a plain scroller the reader drives. */
+  .photo-rail {
+    overflow-x: auto;
+  }
+
+  .photo-rail-track {
+    animation: none;
+  }
+}
+
+/* --- how it works ------------------------------------------------------- */
+
+.how-grid {
+  list-style: none;
+  margin: var(--space-lg) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-xl);
+}
+
+@media (min-width: 760px) {
+  .how-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+  }
+}
+
+.how-grid > * {
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--line);
+}
+
+.how-n {
+  display: block;
+  font-family: var(--serif);
+  font-size: var(--text-sm);
+  color: var(--tan);
+  letter-spacing: 0.1em;
+}
+
+.how-grid h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--text-md);
+  margin: var(--space-2xs) 0 var(--space-2xs);
+}
+
+.how-grid p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  max-width: 34ch;
+  text-wrap: pretty;
+}

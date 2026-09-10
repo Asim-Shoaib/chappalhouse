@@ -1,0 +1,5 @@
+{
+  "_comment": "Generated 3D meshes per product slug, from batch-2 multi-view photos via Tripo H3.1. Source URLs are CloudFront links from the generation job; re-run node scripts/fetch-models.mjs to pull and compress them into apps/storefront/public/models/. Each mesh reconstructs the pair as photographed, branding included.",
+  "nude-braided-slide": "https://d8j0ntlcm91z4.cloudfront.net/user_39kZVMbxP8fTX4J0pE6xP2X4lyM/hf_20260824_092459_56889067-5142-47cb-8a32-7f50bbfbe217.glb",
+  "mint-embroidered-khussa": "https://d8j0ntlcm91z4.cloudfront.net/user_39kZVMbxP8fTX4J0pE6xP2X4lyM/hf_20260824_103626_93b12758-5dae-4a80-a280-abdedc3bf695.glb"
+}

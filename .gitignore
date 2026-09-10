@@ -1,0 +1,36 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Secrets — never commit. Supabase service role key bypasses all RLS.
+.env
+.env.*
+!.env.example
+
+# Source photos are large HEIC originals; processed WebP is generated.
+assets/processed/
+
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.vercel
+.turbo
+*.tsbuildinfo
+.3d-work/
+.3d-review/
+**/CLAUDE-changelog.md
+
+# Camera originals. The storefront serves pre-processed WebP from
+# apps/storefront/public/products/; these HEIC files are the unprocessed
+# source and add ~345 MB that GitHub would reject or choke on. Keep them
+# backed up outside the repo.
+assets/*.HEIC
+
+# Local tooling scratch, not project source.
+.playwright-mcp/
+.check/
+.contact-sheets-batch2/
+best-*.png

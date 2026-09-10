@@ -1,0 +1,73 @@
+# Static robots.txt — place in public/robots.txt
+# Works for: Astro, Vite, SvelteKit, Nuxt, plain static, and Next.js
+# (Next.js: use public/robots.txt OR app/robots.ts — not both)
+#
+# Replace https://example.com with your real domain before deploying.
+
+# --- Search engines ---
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# --- AI crawlers: training ---
+# GPTBot trains OpenAI models. Allowing it does NOT itself get you cited in
+# ChatGPT — that's OAI-SearchBot's job. Block this one if you object to your
+# content training models; it costs you no search visibility.
+User-agent: GPTBot
+Allow: /
+
+# --- AI crawlers: live search/citation (the ones that matter for visibility) ---
+# OAI-SearchBot powers ChatGPT Search results and citations.
+User-agent: OAI-SearchBot
+Allow: /
+
+# ChatGPT-User fetches a page when a user asks ChatGPT about that specific URL.
+User-agent: ChatGPT-User
+Allow: /
+
+# PerplexityBot indexes for Perplexity answers and citations.
+User-agent: PerplexityBot
+Allow: /
+
+# Perplexity-User fetches on direct user request.
+User-agent: Perplexity-User
+Allow: /
+
+# Anthropic — ClaudeBot indexes; Claude-User fetches on user request.
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+# Google's AI crawler. NOTE: Google-Extended controls Gemini/Vertex training
+# and AI Overviews grounding. It does NOT affect normal Google Search ranking —
+# blocking it will not deindex you from Search.
+User-agent: Google-Extended
+Allow: /
+
+# Apple Intelligence / Siri.
+User-agent: Applebot-Extended
+Allow: /
+
+# Meta AI.
+User-agent: meta-externalagent
+Allow: /
+
+# Common Crawl — feeds many downstream AI datasets and is a free backlink source.
+User-agent: CCBot
+Allow: /
+
+# --- Default ---
+User-agent: *
+Allow: /
+
+# Block only genuinely private or worthless-to-index paths.
+# Do NOT block /api if any route returns user-facing content.
+Disallow: /admin/
+Disallow: /_next/static/chunks/
+
+# --- Sitemap (required — update the domain) ---
+Sitemap: https://example.com/sitemap.xml
