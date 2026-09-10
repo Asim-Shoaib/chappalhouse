@@ -34,3 +34,10 @@ assets/*.HEIC
 .check/
 .contact-sheets-batch2/
 best-*.png
+
+# Local agent tooling. Personal to the machine, not part of the storefront,
+# and much of it is third-party skill content that does not belong in a
+# public repo.
+.claude/
+.agents/
+skills-lock.json
