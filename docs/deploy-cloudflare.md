@@ -36,6 +36,20 @@ You will not run a deploy command. You set two secrets once, and pushes to
 
 ---
 
+### The current run is red, and that is expected
+
+The workflow is already live and has run. It gets as far as **Build worker
+bundle** (green) and stops at **Deploy** (red) with:
+
+> In a non-interactive environment, it's necessary to set a
+> `CLOUDFLARE_API_TOKEN` environment variable
+
+Nothing is broken. Typecheck, both test suites and the full Worker bundle all
+pass on the runner — the deploy step just has no credentials yet. Steps 1 and
+2 below add them, and the next run goes green.
+
+---
+
 ## 1. Create a Cloudflare API token
 
 **Cloudflare dashboard → My Profile → API Tokens → Create Token**
