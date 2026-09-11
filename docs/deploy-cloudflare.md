@@ -36,17 +36,23 @@ You will not run a deploy command. You set two secrets once, and pushes to
 
 ---
 
-### The current run is red, and that is expected
+### Status: deployed
 
-The workflow is already live and has run. It gets as far as **Build worker
-bundle** (green) and stops at **Deploy** (red) with:
+Steps 1 and 2 are done — the token and secret are in place and the pipeline
+is green end to end. The Worker is live at:
 
-> In a non-interactive environment, it's necessary to set a
-> `CLOUDFLARE_API_TOKEN` environment variable
+**https://chappalhouse.sheikhabdullah2240.workers.dev**
 
-Nothing is broken. Typecheck, both test suites and the full Worker bundle all
-pass on the runner — the deploy step just has no credentials yet. Steps 1 and
-2 below add them, and the next run goes green.
+Every push to `main` redeploys it. Steps 1 and 2 are kept below for when the
+token is rotated or the site moves to another account.
+
+What is left: the environment variables in step 4, and pointing
+`chappalhouse.live` at the Worker in step 5.
+
+> **On `CLOUDFLARE_ACCOUNT_ID`:** an early run failed with API error 7003
+> routing to `/accounts/<id>/workers/services/chappalhouse`. The workflow no
+> longer passes an account id at all — the token is scoped to one account, so
+> wrangler resolves it. Do not add the variable back.
 
 ---
 
