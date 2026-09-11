@@ -49,9 +49,12 @@ jobs:
         working-directory: apps/storefront
         run: npx opennextjs-cloudflare build
 
+      # No CLOUDFLARE_ACCOUNT_ID: the token is scoped to a single account, so
+      # wrangler resolves the account from it. Passing an explicit id only adds
+      # a value that can be wrong — a mistyped one fails as API error 7003,
+      # which reads like a missing worker rather than a bad account.
       - name: Deploy
         working-directory: apps/storefront
         run: npx opennextjs-cloudflare deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
