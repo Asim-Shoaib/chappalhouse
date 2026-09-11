@@ -15,9 +15,19 @@
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // The catalog seed lives at the repo root so the import scripts and the
+      // storefront share one file. Aliased rather than reached with ../../../..
+      // so moving a module does not silently break the path.
+      "@root/*": ["../../*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "../../data/*.json"
+  ],
   "exclude": ["node_modules"]
 }

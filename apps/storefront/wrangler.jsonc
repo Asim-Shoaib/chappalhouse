@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chappalhouse",
+  "main": ".open-next/worker.js",
+
+  // Must be 2025-05-05 or later for FinalizationRegistry, which the Next
+  // server runtime needs. Kept current beyond that floor so the Worker picks
+  // up runtime fixes.
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": [
+    // node:crypto — createHmac/createHash/timingSafeEqual sign the receipt
+    // tokens and verify the Safepay webhook.
+    "nodejs_compat",
+    // Treats fetch() to our own hostname as a real public request rather than
+    // short-circuiting it inside the Worker.
+    "global_fetch_strictly_public"
+  ],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+
+  // No R2 or Durable Object cache bindings. Those exist to shard an
+  // incremental cache across a large site; this catalog is 33 products
+  // rendered at build time, so the default in-memory cache is enough and
+  // avoids putting paid resources in the critical path.
+}

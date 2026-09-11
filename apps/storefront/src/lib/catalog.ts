@@ -1,7 +1,11 @@
 import 'server-only'
 
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+// Imported rather than read from disk at request time. The storefront runs on
+// Cloudflare Workers, which has no filesystem and no meaningful cwd, so a
+// readFile here returned an empty catalog and every product page 404'd. As a
+// static import the seed is bundled at build time, which also removes a file
+// read from the hot path.
+import seed from '@root/data/catalog.json'
 import type { Category, Product } from './product'
 
 export type { Category, Variant, Product } from './product'
@@ -49,21 +53,19 @@ type SeedProduct = {
 }
 
 /**
- * Reads the catalog from the generated seed file so the storefront runs before
+ * Serves the catalog from the generated seed so the storefront runs before
  * Supabase is provisioned. Once the database is live this is replaced by a
  * query against `public_products`.
+ *
+ * Async because callers await it and the Supabase version will genuinely be
+ * async; the seed itself is already in memory.
  */
 export async function getProducts(): Promise<Product[]> {
-  const seedPath = join(process.cwd(), '..', '..', 'data', 'catalog.json')
-
-  let seed: SeedProduct[]
-  try {
-    seed = JSON.parse(await readFile(seedPath, 'utf8'))
-  } catch {
-    return []
-  }
-
-  return seed.map((p) => ({
+  // Through `unknown`: tsc infers a literal type per entry from the JSON, so
+  // each product's `counts` carries only the sizes that product happens to
+  // stock. That union does not overlap Record<string, number> structurally,
+  // even though the data is exactly right.
+  return (seed as unknown as SeedProduct[]).map((p) => ({
     slug: p.slug,
     name: DISPLAY_NAMES[p.slug] ?? p.name,
     category: p.category,

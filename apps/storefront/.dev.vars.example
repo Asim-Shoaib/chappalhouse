@@ -1,0 +1,37 @@
+# Local Worker environment for `npm run preview`. Copy to `.dev.vars` and fill
+# in. `.dev.vars` is gitignored — never commit real values.
+#
+# In production these are NOT set here. Public values go in the Cloudflare
+# dashboard as plaintext Variables; everything under SECRETS below goes in as
+# encrypted Secrets. See docs/deploy-cloudflare.md.
+
+# --- Public. Safe in the client bundle and in plaintext vars. ---
+NEXT_PUBLIC_SITE_URL="https://chappalhouse.live"
+NEXT_PUBLIC_WHATSAPP_NUMBER="923001234567"
+NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
+
+# --- Server config. Not secret, but server-side only. ---
+SAFEPAY_ENVIRONMENT="sandbox"
+SHIPPING_FEE_PAISA="25000"
+
+# --- Payment details shown to the customer on the transfer page. ---
+MANUAL_PAYMENT_ACCOUNT_NAME=""
+MANUAL_PAYMENT_EASYPAISA=""
+MANUAL_PAYMENT_JAZZCASH=""
+MANUAL_PAYMENT_BANK_NAME=""
+MANUAL_PAYMENT_BANK_IBAN=""
+
+# --- SECRETS. Encrypted in production, never in plaintext vars. ---
+SUPABASE_URL="https://your-project.supabase.co"
+# Bypasses row-level security. Treat like a root password.
+SUPABASE_SERVICE_ROLE_KEY=""
+SAFEPAY_API_KEY=""
+SAFEPAY_SECRET_KEY=""
+SAFEPAY_WEBHOOK_SECRET=""
+# Signs receipt access tokens. Any long random string; rotating it invalidates
+# every outstanding receipt link.
+RECEIPT_TOKEN_SECRET=""
+# Guards /api/internal/release-reservations against public calls.
+CRON_SECRET=""
+# Gates the /admin/analytics page.
+ANALYTICS_DASHBOARD_TOKEN=""

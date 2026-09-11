@@ -41,3 +41,9 @@ best-*.png
 .claude/
 .agents/
 skills-lock.json
+
+# Cloudflare Workers build output and local state.
+.open-next/
+.wrangler/
+# Local Worker secrets for `wrangler dev`. Never committed.
+.dev.vars

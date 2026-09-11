@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // The catalog seed lives at the repo root, outside this app directory.
+  // The Cloudflare adapter bundles from .next/standalone, so Next has to emit
+  // it. Without this the OpenNext build fails looking for a manifest that only
+  // exists in standalone output.
+  output: 'standalone',
+  // This app is one workspace in a monorepo whose lockfile sits at the repo
+  // root. Without this Next guesses the tracing root and warns; the guess also
+  // decides how deeply standalone output is nested, which the adapter relies
+  // on to find that manifest.
   outputFileTracingRoot: new URL('../../', import.meta.url).pathname,
   images: {
     // Photos are pre-converted to sized WebP by scripts/process-images.mjs.

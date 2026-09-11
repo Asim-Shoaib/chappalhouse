@@ -1,0 +1,51 @@
+name: Deploy to Cloudflare Workers
+
+# Builds on Linux. The OpenNext adapter is explicitly not supported on
+# Windows — its own docs recommend WSL, a Linux VM, or CI — so deploying from
+# here rather than a developer machine is the supported path, not a
+# workaround.
+
+on:
+  push:
+    branches: [main]
+  # Lets you deploy by hand from the Actions tab without pushing.
+  workflow_dispatch:
+
+# A second push while a deploy is running cancels the first, so the newest
+# commit is what ends up live.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck --workspace=apps/storefront
+
+      - name: Test
+        run: npm run test --workspace=apps/storefront
+
+      # Catalog and checkout logic that the storefront suite does not cover.
+      - name: Test import scripts
+        run: node --test scripts/import-stock.test.mjs
+
+      - name: Build and deploy
+        working-directory: apps/storefront
+        run: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
