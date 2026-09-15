@@ -1,7 +1,9 @@
 import type { MetadataRoute } from 'next'
 import { getProducts } from '@/lib/catalog'
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+// Production origin, not localhost: an unset variable used to emit a sitemap
+// full of localhost URLs, which tells Google nothing exists.
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://chappalhouse.live'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getProducts()

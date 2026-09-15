@@ -4,8 +4,10 @@
 
 import type { MetadataRoute } from 'next'
 
-// Set NEXT_PUBLIC_SITE_URL in Vercel project settings for all environments.
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.com'
+// Set NEXT_PUBLIC_SITE_URL in the Cloudflare Worker's variables. The fallback
+// is the real origin so an unset variable cannot point crawlers at a sitemap
+// on example.com.
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://chappalhouse.live'
 
 // Crawlers allowed full access.
 // The search/citation bots are what drive AI visibility; the training bots

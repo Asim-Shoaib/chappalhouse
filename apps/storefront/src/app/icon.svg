@@ -1,5 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#7c2230"/>
-  <path d="M14 39c10-14 24-23 37-21-3 13-12 24-28 29-5 2-9-3-9-8Z" fill="#faf6f0"/>
-  <path d="M23 39c8-7 16-12 25-15" fill="none" stroke="#b8814a" stroke-width="3" stroke-linecap="round"/>
+  <!-- Khussa in profile: the curled toe is the one shape that reads as this
+       shoe and nothing else. Drawn with heavy strokes and a single accent
+       because a favicon is judged at 16px, where the thin outline and the
+       third colour of the earlier version turned to mush. -->
+  <rect width="64" height="64" rx="14" fill="#7c2230"/>
+  <path d="M10 44c0-3 2-5 5-6 8-2 15-6 21-12 3-3 7-5 11-4 3 1 4 4 3 7-2 7-8 13-16 16-6 2-13 3-19 3-3 0-5-2-5-4Z"
+        fill="#faf6f0"/>
+  <path d="M47 22c2-1 4 0 4 2 0 3-2 5-5 6"
+        fill="none" stroke="#b8814a" stroke-width="3.5" stroke-linecap="round"/>
 </svg>

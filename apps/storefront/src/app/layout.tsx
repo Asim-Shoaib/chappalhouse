@@ -6,7 +6,11 @@ import { CartProvider } from '@/components/CartProvider'
 import { CartLink } from '@/components/CartLink'
 import { getProducts } from '@/lib/catalog'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+// Falls back to the production origin, not localhost. metadataBase turns the
+// relative og:image into an absolute URL, and a localhost fallback shipped a
+// share card that resolved to nobody's machine — every WhatsApp and Facebook
+// share rendered without an image.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://chappalhouse.live'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -15,14 +19,55 @@ export const metadata: Metadata = {
     template: '%s | Chappal House',
   },
   description:
-    'Handcrafted khussa and chappals for women, delivered across Islamabad and Pakistan. Cash on delivery available.',
+    'Hand-embroidered khussa and chappals for women, sized on WhatsApp before you order. Cash on delivery across Pakistan, delivered in 2 to 4 days.',
+  keywords: [
+    'khussa',
+    'khussa online Pakistan',
+    'chappal for women',
+    'handmade khussa Islamabad',
+    'cash on delivery shoes Pakistan',
+  ],
+  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: 'en_PK',
     siteName: 'Chappal House',
-    images: ['/icon.svg'],
+    title: 'Chappal House — Handcrafted Khussa & Chappals',
+    description:
+      'Hand-embroidered khussa and chappals, photographed as real stock. Cash on delivery across Pakistan.',
+    // A photograph of stock actually held, not the favicon. Social platforms
+    // will not render an SVG, so this is a 1200x630 JPEG.
+    images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'Maroon khussa with gold embroidery' }],
   },
-  twitter: { card: 'summary', images: ['/icon.svg'] },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Chappal House — Handcrafted Khussa & Chappals',
+    description:
+      'Hand-embroidered khussa and chappals, photographed as real stock. Cash on delivery across Pakistan.',
+    images: ['/og.jpg'],
+  },
+}
+
+// Tells Google this is one business rather than a loose set of pages: it is
+// what lets a result carry the shop's own logo and name instead of a generic
+// globe, and what a knowledge panel is built from.
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'OnlineStore',
+  name: 'Chappal House',
+  url: siteUrl,
+  logo: `${siteUrl}/icon.svg`,
+  image: `${siteUrl}/og.jpg`,
+  description:
+    'Hand-embroidered khussa and chappals for women, sourced in Lahore and shipped from Islamabad.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Islamabad',
+    addressCountry: 'PK',
+  },
+  areaServed: { '@type': 'Country', name: 'Pakistan' },
+  paymentAccepted: 'Cash on delivery, Easypaisa, JazzCash, bank transfer',
+  currenciesAccepted: 'PKR',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +75,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema).replace(/</g, '\\u003c'),
+          }}
+        />
         <CartProvider products={products}>
         <PageViewTracker />
         <a className="skip-link" href="#content">

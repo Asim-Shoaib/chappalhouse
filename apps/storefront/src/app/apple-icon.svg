@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <!-- iOS home-screen icon. Same mark as icon.svg but drawn for 180px, where
+       the shape can carry more detail, and with no rounded corners — iOS masks
+       the icon itself and a pre-rounded square gets clipped twice. -->
+  <rect width="180" height="180" fill="#7c2230"/>
+  <path d="M28 124c0-8 6-14 14-17 22-6 42-17 59-34 8-8 20-14 31-11 8 2 11 11 8 20-6 20-23 37-45 45-17 6-37 8-53 8-8 0-14-5-14-11Z"
+        fill="#faf6f0"/>
+  <path d="M132 62c6-3 11 0 11 6 0 8-6 14-14 17"
+        fill="none" stroke="#b8814a" stroke-width="10" stroke-linecap="round"/>
+</svg>
