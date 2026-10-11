@@ -2,9 +2,20 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getProducts, imageUrl } from '@/lib/catalog'
 import { ProductCard } from '@/components/ProductCard'
-import { Reveal, RevealStagger } from '@/components/Reveal'
 import { PhotoRail } from '@/components/PhotoRail'
 import { HowItWorks } from '@/components/HowItWorks'
+import { HomeMotion } from '@/components/HomeMotion'
+import { PaperShapes } from '@/components/PaperShapes'
+import { TornEdge } from '@/components/TornEdge'
+
+// Runs while the parser reaches it, before the hero is painted, so the hero
+// text can start hidden without a visible-then-hidden flash. Reduced motion
+// never gets the class. If the bundle never loads, globals.css reveals
+// everything after 2s on its own. Client-side navigation back to "/" does not
+// run this (scripts rendered by React do not execute); HomeMotion adds the
+// class itself in a layout effect, which is also before paint.
+const HOME_WAIT =
+  "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('home-wait')}catch(e){}"
 
 export default async function HomePage() {
   const products = await getProducts()
@@ -13,13 +24,15 @@ export default async function HomePage() {
   const heroImage = khussa.find((p) => p.images.length > 0)?.images[0]
 
   return (
-    <>
+    <div className="home">
+      <script dangerouslySetInnerHTML={{ __html: HOME_WAIT }} />
       <section className="hero">
+        <PaperShapes scene="hero" />
         <div className="shell hero-inner">
           <div className="hero-copy">
             <p className="eyebrow">Islamabad · Cash on delivery</p>
             <h1>
-              Khussa worth
+              Khussa worth{' '}
               <br />
               wearing twice
             </h1>
@@ -38,20 +51,32 @@ export default async function HomePage() {
           </div>
 
           {heroImage && (
-            <div className="hero-figure">
-              <Image
-                src={imageUrl(heroImage)}
-                alt="Hand-embroidered maroon khussa"
-                width={1400}
-                height={1750}
-                priority
-              />
+            <div className="hero-lift">
+              <div className="hero-tilt">
+                <div className="hero-figure">
+                  <i className="paper-shadow" aria-hidden="true" />
+                  <div className="hero-card">
+                    <Image
+                      src={imageUrl(heroImage)}
+                      alt="Hand-embroidered maroon khussa"
+                      width={1400}
+                      height={1750}
+                      priority
+                    />
+                  </div>
+                  <i className="tape tape-a" aria-hidden="true" />
+                  <i className="tape tape-b" aria-hidden="true" />
+                </div>
+              </div>
             </div>
           )}
         </div>
       </section>
 
+      <TornEdge tone="dark" />
+
       <section className="story-band">
+        <PaperShapes scene="story" />
         <div className="shell story-grid">
           <p className="eyebrow">From Lahore, for your everyday</p>
           <div>
@@ -61,22 +86,23 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <TornEdge tone="paper" />
+
       {khussa.length > 0 && (
-        <section className="section">
+        <section className="section sec-grid">
+          <PaperShapes scene="grid-a" />
           <div className="shell">
-            <Reveal>
-              <div className="section-head">
-                <h2>Khussa</h2>
-                <Link href="/khussa" className="muted">
-                  View all
-                </Link>
-              </div>
-            </Reveal>
-            <RevealStagger className="grid">
+            <div className="section-head">
+              <h2>Khussa</h2>
+              <Link href="/khussa" className="muted">
+                View all
+              </Link>
+            </div>
+            <div className="grid">
               {khussa.map((p) => (
                 <ProductCard key={p.slug} product={p} />
               ))}
-            </RevealStagger>
+            </div>
           </div>
         </section>
       )}
@@ -84,26 +110,30 @@ export default async function HomePage() {
       <PhotoRail products={products} />
 
       {chappals.length > 0 && (
-        <section className="section">
+        <section className="section sec-grid">
+          <PaperShapes scene="grid-b" />
           <div className="shell">
-            <Reveal>
-              <div className="section-head">
-                <h2>Chappals</h2>
-                <Link href="/chappals" className="muted">
-                  View all
-                </Link>
-              </div>
-            </Reveal>
-            <RevealStagger className="grid">
+            <div className="section-head">
+              <h2>Chappals</h2>
+              <Link href="/chappals" className="muted">
+                View all
+              </Link>
+            </div>
+            <div className="grid">
               {chappals.map((p) => (
                 <ProductCard key={p.slug} product={p} />
               ))}
-            </RevealStagger>
+            </div>
           </div>
         </section>
       )}
 
-      {products.length > 0 && <HowItWorks />}
+      {products.length > 0 && (
+        <>
+          <TornEdge tone="tint" />
+          <HowItWorks />
+        </>
+      )}
 
       {products.length === 0 && (
         <section className="section">
@@ -114,6 +144,8 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-    </>
+
+      <HomeMotion />
+    </div>
   )
 }

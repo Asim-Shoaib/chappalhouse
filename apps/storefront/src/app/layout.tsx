@@ -73,7 +73,7 @@ const organizationSchema = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const products = await getProducts()
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <script
           type="application/ld+json"

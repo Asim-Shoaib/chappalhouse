@@ -2002,19 +2002,6 @@ img {
   }
 }
 
-.how-grid > * {
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--line);
-}
-
-.how-n {
-  display: block;
-  font-family: var(--serif);
-  font-size: var(--text-sm);
-  color: var(--tan);
-  letter-spacing: 0.1em;
-}
-
 .how-grid h3 {
   font-family: var(--serif);
   font-weight: 400;
@@ -2028,4 +2015,819 @@ img {
   font-size: var(--text-sm);
   max-width: 34ch;
   text-wrap: pretty;
+}
+
+/* ==========================================================================
+   Homepage motion (style C: warm tactile / paper-craft)
+   Scoped to .home (app/page.tsx), driven by components/HomeMotion.tsx.
+   Existing tokens only: --tan is the second paper stock (shapes, tape and the
+   torn edges, never text), --accent-surface is the one accent shape per scene,
+   --invert-surface is the hard paper shadow. Nothing here blurs, and every rest
+   angle is <= 1.5deg except the hero card (2deg). The page is complete with JS
+   off and under reduced motion; HomeMotion only adds movement. Classes it puts
+   on .home while a layer is live: deck-on (desktop pins), stack-on (phone
+   sticky stack), rail-js (the rail is driven by script).
+   ========================================================================== */
+
+.home {
+  --how-tint: color-mix(in srgb, var(--tan) 13%, var(--paper));
+}
+
+/* Lenis (desktop wheel only; the classes exist only while it runs). */
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* At the page ends nothing rubber-bands; the paper shapes keep turning instead. */
+html.home-live,
+html.home-live body {
+  overscroll-behavior: none;
+}
+
+/* Split headlines: kerning and ligatures off so split and unsplit text have the same width. */
+.home .hero h1,
+.home .story-band h2,
+.home .section-head h2 {
+  font-kerning: none;
+  font-variant-ligatures: none;
+}
+
+.home .hc,
+.home .sc,
+.home .dc {
+  transform-origin: 50% 85%;
+}
+
+/* --- hero ---------------------------------------------------------------- */
+
+.home .hero {
+  position: relative;
+}
+
+.home .hero .shell {
+  position: relative;
+  z-index: 1;
+}
+
+/* Wrappers, one owner each: lift (exit scrub), tilt (cursor), figure (intro and rest angle). */
+.home .hero-lift,
+.home .hero-tilt {
+  position: relative;
+}
+
+/* The photo is a cut-paper card pinned to the board: hard offset shadow, two
+   strips of tape, a rest angle. The figure turns, the card steps down, the
+   shadow and tape are their own nodes so only transform and opacity animate. */
+.home .hero-figure {
+  --hero-rest: -2deg;
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: auto;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  transform: rotate(var(--hero-rest));
+}
+
+.home .hero-figure::after {
+  content: none;
+}
+
+.home .hero-card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.home .hero-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, transparent 55%, rgba(0, 0, 0, 0.16));
+  pointer-events: none;
+}
+
+.home .paper-shadow {
+  position: absolute;
+  inset: 4px -3px -4px 3px;
+  z-index: -1;
+  border-radius: var(--radius);
+  background: var(--invert-surface);
+}
+
+.home .tape {
+  position: absolute;
+  top: -12px;
+  z-index: 2;
+  display: block;
+  width: clamp(64px, 24%, 104px);
+  height: 26px;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper-raised) 78%, transparent);
+  transform: rotate(var(--rot));
+  pointer-events: none;
+}
+
+.home .tape-a {
+  --rot: -4deg;
+  left: 9%;
+}
+
+.home .tape-b {
+  --rot: 4deg;
+  right: 9%;
+}
+
+/* Anti-flash. An inline script (page.tsx) adds html.home-wait before the hero
+   paints, so the hero starts in its pre-animation pose instead of being
+   painted and then hidden. HomeMotion removes the class in the same task that
+   writes the matching inline start states. If the bundle never arrives,
+   everything is revealed by CSS after 2s; with JS off the class never exists. */
+@keyframes home-wait-show {
+  to {
+    visibility: visible;
+  }
+}
+
+@keyframes home-wait-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes home-wait-land {
+  to {
+    transform: none;
+  }
+}
+
+@keyframes home-wait-tilt {
+  to {
+    transform: rotate(var(--hero-rest));
+  }
+}
+
+html.home-wait .home .hero h1 {
+  visibility: hidden;
+  animation: home-wait-show 1ms 2s forwards;
+}
+
+html.home-wait .home .hero-copy > :not(h1),
+html.home-wait .home .paper-shadow,
+html.home-wait .home .tape {
+  opacity: 0;
+  animation: home-wait-fade 1ms 2s forwards;
+}
+
+html.home-wait .home .hero-figure {
+  transform: rotate(calc(var(--hero-rest) + 3deg));
+  animation: home-wait-tilt 1ms 2s forwards;
+}
+
+html.home-wait .home .hero-card {
+  transform: translate(-3px, -4px);
+  animation: home-wait-land 1ms 2s forwards;
+}
+
+@media (max-width: 720px) {
+  .home .hero-figure {
+    --hero-rest: -1.5deg;
+  }
+}
+
+/* --- torn paper dividers -------------------------------------------------- */
+
+/* Zero height in the flow: the strip hangs upward from the seam over the
+   section above, so nothing moves. A tan under-layer shows a kraft fringe. */
+.home .torn {
+  position: relative;
+  z-index: 2;
+  height: 0;
+  pointer-events: none;
+}
+
+.home .torn svg {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  display: block;
+  width: 100%;
+  height: clamp(16px, 2.4vw, 32px);
+}
+
+.home .torn-under {
+  fill: var(--tan);
+}
+
+.home .torn-dark .torn-over {
+  fill: var(--invert-surface);
+}
+
+.home .torn-paper .torn-over {
+  fill: var(--paper);
+}
+
+.home .torn-tint .torn-over {
+  fill: var(--how-tint);
+}
+
+/* --- story band: the page's one loud moment ---------------------------------- */
+
+.home .story-band {
+  position: relative;
+  overflow: clip;
+}
+
+.home .story-band .shell {
+  position: relative;
+  z-index: 1;
+}
+
+.home .story-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-md);
+}
+
+.home .story-band h2 {
+  max-width: 18ch;
+  margin-bottom: var(--space-sm);
+  font-size: clamp(2.25rem, 1.2rem + 4.6vw, 5.25rem);
+  line-height: 1.02;
+}
+
+/* Desktop: the band is a full scene, pinned by HomeMotion. */
+.home.deck-on .story-band > .shell {
+  width: 100%;
+}
+
+.home.deck-on .story-band {
+  display: grid;
+  align-content: center;
+  min-height: calc(100svh - var(--hh, 91px));
+  padding-block: var(--space-xl);
+}
+
+/* --- cut-paper shapes ---------------------------------------------------------- */
+
+/* Shapes live in the gutters, behind the text layer, on every scene. Below 1100px
+   (and in short landscape) only the small .m ones show, inside the scene's own
+   padding. Positions come from the --t/--r/--b/--l (wide) and --tm/--rm/--bm/--lm
+   (compact) variables of each shape's class. */
+.home .shape {
+  position: absolute;
+  z-index: 0;
+  display: none;
+  width: var(--zd, 80px);
+  height: var(--zd, 80px);
+  top: var(--t, auto);
+  right: var(--r, auto);
+  bottom: var(--b, auto);
+  left: var(--l, auto);
+  pointer-events: none;
+}
+
+.home .shape i {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.home .shape-in {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.home .cut-tan {
+  fill: var(--tan);
+}
+
+.home .cut-accent {
+  fill: var(--accent-surface);
+}
+
+.home .cut-shadow {
+  fill: rgb(0 0 0 / 0.4);
+}
+
+.home .cut-hole {
+  fill: var(--invert-surface);
+}
+
+.home .cut-vein {
+  fill: none;
+  stroke: var(--invert-surface);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+@media (min-width: 1100px) and (min-height: 501px) {
+  .home .shape {
+    display: block;
+  }
+}
+
+@media (max-width: 1099px), (max-height: 500px) {
+  .home .shape.m {
+    display: block;
+    width: var(--zm, 40px);
+    height: var(--zm, 40px);
+    top: var(--tm, auto);
+    right: var(--rm, auto);
+    bottom: var(--bm, auto);
+    left: var(--lm, auto);
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .home .shape,
+  .home .shape.m {
+    display: none;
+  }
+}
+
+/* hero */
+.home .sh-h1 {
+  --zd: clamp(84px, 7vw, 120px);
+  --l: 1.5%;
+  --b: 4%;
+}
+
+.home .sh-h2 {
+  --zd: clamp(46px, 4vw, 64px);
+  --r: 2.2%;
+  --t: 9%;
+  --zm: 36px;
+  --rm: 14px;
+  --tm: 150px;
+}
+
+/* story band */
+.home .sh-s1 {
+  --zd: clamp(100px, 8vw, 140px);
+  --r: 24%;
+  --b: 20%;
+  --zm: 40px;
+  --lm: 6%;
+  --bm: 16px;
+}
+
+.home .sh-s2 {
+  --zd: clamp(72px, 6vw, 96px);
+  --r: 3.5%;
+  --t: 40%;
+}
+
+.home .sh-s3 {
+  --zd: clamp(96px, 8vw, 124px);
+  --r: 9%;
+  --t: 9%;
+  --zm: 40px;
+  --rm: 6%;
+  --tm: 16px;
+}
+
+.home .sh-s4 {
+  --zd: clamp(48px, 4vw, 64px);
+  --r: 14%;
+  --b: 11%;
+}
+
+/* grid gutters (Khussa a, Chappals b): only where the page has a real gutter */
+.home .sec-grid {
+  position: relative;
+  overflow-x: clip;
+}
+
+.home .sec-grid > .shell {
+  position: relative;
+  z-index: 1;
+}
+
+.home .sec-grid .shape {
+  display: none;
+}
+
+@media (min-width: 1280px) and (min-height: 501px) {
+  .home .sec-grid .shape {
+    --g: calc((100vw - 1132px) / 2);
+    --zd: min(86px, calc(var(--g) - 34px));
+    display: block;
+  }
+
+  .home .sh-a1,
+  .home .sh-a3,
+  .home .sh-b1,
+  .home .sh-b3,
+  .home .sh-b5 {
+    --l: calc(var(--g) / 2 - var(--zd) / 2);
+  }
+
+  .home .sh-a2,
+  .home .sh-a4,
+  .home .sh-b2,
+  .home .sh-b4,
+  .home .sh-b6 {
+    --r: calc(var(--g) / 2 - var(--zd) / 2);
+  }
+
+  .home .sh-a1 {
+    --t: 9%;
+  }
+
+  .home .sh-a2 {
+    --t: 18%;
+  }
+
+  .home .sh-a3 {
+    --t: 58%;
+  }
+
+  .home .sh-a4 {
+    --t: 70%;
+  }
+
+  .home .sh-b1 {
+    --t: 7%;
+  }
+
+  .home .sh-b2 {
+    --t: 17%;
+  }
+
+  .home .sh-b3 {
+    --t: 38%;
+  }
+
+  .home .sh-b4 {
+    --t: 52%;
+  }
+
+  .home .sh-b5 {
+    --t: 70%;
+  }
+
+  .home .sh-b6 {
+    --t: 86%;
+  }
+}
+
+/* how it works */
+.home .sh-w1 {
+  --zd: clamp(80px, 7vw, 112px);
+  --l: 7%;
+  --t: 12%;
+  --zm: 36px;
+  --rm: 14px;
+  --tm: 8px;
+}
+
+.home .sh-w2 {
+  --zd: clamp(100px, 9vw, 140px);
+  --l: 9%;
+  --b: 12%;
+}
+
+.home .sh-w3 {
+  --zd: clamp(64px, 5vw, 88px);
+  --r: 9%;
+  --t: 36%;
+}
+
+.home .sh-w4 {
+  --zd: clamp(48px, 4vw, 64px);
+  --r: 6%;
+  --b: 10%;
+  --zm: 36px;
+  --lm: 14px;
+  --bm: 34px;
+}
+
+.home .sh-w5 {
+  --zd: clamp(80px, 7vw, 108px);
+  --r: 15%;
+  --t: 8%;
+}
+
+/* The how-it-works shapes are placed for the live scene (the pinned deck, or the phone stack).
+   In the plain layout (JS off, reduced motion, short screens) the cards sit in three columns
+   and the same positions would land on them, so the shapes are left out there. */
+.home:not(.deck-on):not(.stack-on) .how-band .shape,
+.home:not(.deck-on):not(.stack-on) .how-band .shape.m {
+  display: none;
+}
+
+/* --- section heads: big display words ----------------------------------------- */
+
+.home .section-head {
+  margin-bottom: clamp(20px, 3vw, 40px);
+}
+
+.home .section-head h2 {
+  font-size: clamp(3.5rem, 11vw, 9rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.home .section-head a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* --- product cards ------------------------------------------------------------- */
+
+/* Cards are cut paper pinned at slight angles. The rest angle repeats and
+   stays within 1.5deg so prices stay readable; HomeMotion reads --rest, so
+   the landing ends exactly where the static page already is. */
+.home .grid > :nth-child(5n + 1) {
+  --rest: -1.2deg;
+}
+
+.home .grid > :nth-child(5n + 2) {
+  --rest: 0.8deg;
+}
+
+.home .grid > :nth-child(5n + 3) {
+  --rest: -0.4deg;
+}
+
+.home .grid > :nth-child(5n + 4) {
+  --rest: 1deg;
+}
+
+.home .card {
+  position: relative;
+  transform: rotate(var(--rest, 0deg));
+}
+
+/* The hard shadow sits behind the photo only. It is a pseudo-element so the
+   landing can fade it through --sh without ever animating box-shadow. */
+.home .card::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 3px;
+  z-index: -1;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+  background: var(--invert-surface);
+  opacity: var(--sh, 1);
+  pointer-events: none;
+}
+
+/* Hover (fine pointer): the card straightens and lifts 4px onto a longer hard
+   shadow. Pure CSS, switched on per card (card-ready) once its landing tween is
+   finished and cleared, so the CSS transition never fights a script write. */
+@media (hover: hover) and (pointer: fine) {
+  .home .card.card-ready,
+  .home .card.card-ready::before {
+    transition: transform 300ms var(--ease-out-soft);
+  }
+
+  .home .card.card-ready:hover {
+    transform: translateY(-4px) rotate(0deg);
+  }
+
+  .home .card.card-ready:hover::before {
+    transform: translate(3px, 4px);
+  }
+}
+
+/* --- photo rail ------------------------------------------------------------------ */
+
+/* When script drives the rail (velocity-reactive) the CSS marquee steps aside. */
+.home.rail-js .photo-rail-track {
+  animation: none;
+  will-change: transform;
+}
+
+/* --- how it works ---------------------------------------------------------------- */
+
+.home .how-card:nth-child(1) {
+  --rest: -1.5deg;
+  --tape: -3deg;
+  --tx: 30%;
+}
+
+.home .how-card:nth-child(2) {
+  --rest: 1deg;
+  --tape: 3deg;
+  --tx: 68%;
+}
+
+.home .how-card:nth-child(3) {
+  --rest: -0.5deg;
+  --tape: -2deg;
+  --tx: 50%;
+}
+
+.home .how-band {
+  position: relative;
+  overflow-x: clip;
+}
+
+.home .how-band > .shell {
+  position: relative;
+  z-index: 1;
+}
+
+.home .how-card {
+  position: relative;
+  transform: rotate(var(--rest, 0deg));
+  transform-origin: 50% 0;
+}
+
+.home .how-card::before {
+  content: '';
+  position: absolute;
+  inset: 4px -3px -4px 3px;
+  z-index: -1;
+  border-radius: var(--radius);
+  background: var(--invert-surface);
+  opacity: var(--sh, 1);
+  pointer-events: none;
+}
+
+/* A real node (not a pseudo) so the deck can put the tape on after the card lands. */
+.home .how-tape {
+  position: absolute;
+  top: -11px;
+  left: var(--tx, 50%);
+  z-index: 2;
+  display: block;
+  width: 88px;
+  height: 24px;
+  margin-left: -44px;
+  border: 1px solid color-mix(in srgb, var(--tan) 40%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--tan) 52%, transparent);
+  transform: rotate(var(--tape, -3deg));
+  pointer-events: none;
+}
+
+/* In the three-column plain layout a card is as tall as its tallest neighbour, so its face
+   must fill it, or the hard shadow (sized to the card) shows as a block under a short face. */
+.home .how-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.home .how-face {
+  flex: 1 1 auto;
+  padding: 28px 32px 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+.home .how-face h3 {
+  margin: 0 0 var(--space-2xs);
+  line-height: 1.2;
+}
+
+/* Desktop deck. HomeMotion pins .how-band for the length of the deck; the stack is
+   centred in the free area under the header (equal room above and below), the
+   eyebrow sits in the room above it, and cards 2 and 3 rise and land on top.
+   --dh (card height) and --dp (peek strip, the title band) are measured by script. */
+.home.deck-on .how-band {
+  height: calc(100svh - var(--hh, 91px));
+  padding-block: 0;
+  overflow: clip;
+  background: var(--how-tint);
+}
+
+.home.deck-on .how-band > .shell {
+  position: static;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.home.deck-on .how-band .eyebrow {
+  position: absolute;
+  inset-inline: 0;
+  top: max(10px, calc((100% - var(--dh, 13rem) - 2 * var(--dp, 5rem)) / 2 - 54px));
+  z-index: 3;
+  margin: 0;
+  text-align: center;
+}
+
+.home.deck-on .how-grid {
+  position: absolute;
+  inset-inline: 0;
+  top: calc((100% - var(--dh, 13rem) - 2 * var(--dp, 5rem)) / 2);
+  display: block;
+  width: min(34rem, calc(100% - 3rem));
+  height: calc(var(--dh, 13rem) + 2 * var(--dp, 5rem));
+  margin: 0 auto;
+}
+
+.home.deck-on .how-card {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--dh, auto);
+}
+
+.home.deck-on .how-face {
+  height: 100%;
+}
+
+.home.deck-on .how-face h3 {
+  font-size: var(--text-lg);
+}
+
+/* The next card covers everything below the title band, so the body text starts
+   below the peek strip (band + 22px): each earlier card shows its title and
+   blank paper, never a body line cut in half. */
+.home.deck-on .how-face h3,
+.home.stack-on .how-face h3 {
+  margin-bottom: 28px;
+}
+
+/* Phones: a CSS sticky stack. Card 1 sticks so the finished stack is centred in the
+   free area, each next card sticks one peek strip lower, and a dwell after the last
+   one holds the stack for 30% of a screen. */
+.home.stack-on .how-band {
+  --t1: calc(var(--hh, 62px) + (100svh - var(--hh, 62px) - var(--dh, 12rem) - 2 * var(--dp, 4rem)) / 2);
+}
+
+.home.stack-on .how-grid {
+  display: block;
+}
+
+.home.stack-on .how-card {
+  position: sticky;
+  top: calc(var(--t1) + var(--k, 0) * var(--dp, 4rem));
+  height: var(--dh, auto);
+}
+
+/* Sticky boxes release against the end of their list by their margin box. Trailing
+   margins of 2 and 1 peek strips make the three release with the strip between
+   them intact, instead of collapsing onto one line and covering the titles. */
+.home.stack-on .how-card:nth-child(1) {
+  margin-bottom: calc(2 * var(--dp, 4rem));
+}
+
+.home.stack-on .how-card:nth-child(2) {
+  --k: 1;
+  margin-bottom: var(--dp, 4rem);
+}
+
+.home.stack-on .how-card:nth-child(3) {
+  --k: 2;
+}
+
+.home.stack-on .how-card + .how-card {
+  margin-top: calc(100svh - var(--t1) - var(--dh, 12rem) + 8px);
+}
+
+.home.stack-on .how-face {
+  height: 100%;
+  padding: 24px 24px 26px;
+}
+
+.home.stack-on .how-grid::after {
+  content: '';
+  display: block;
+  height: 30svh;
+}
+
+/* --- short landscape ----------------------------------------------------------- */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .home .hero-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.55fr);
+    gap: var(--space-lg);
+    padding-block: var(--space-lg);
+  }
+
+  .home .hero h1 {
+    margin-bottom: 12px;
+    font-size: clamp(1.75rem, 11svh, 3.25rem);
+  }
+
+  .home .hero-actions {
+    margin-top: 18px;
+  }
+
+  .home .hero-lift {
+    justify-self: center;
+    width: min(100%, calc(100svh - 150px));
+  }
+
+  .home .section-head h2 {
+    font-size: clamp(2.5rem, 14svh, 4.5rem);
+  }
 }
