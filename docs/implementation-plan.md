@@ -29,9 +29,32 @@
    confirmation of the target project.
 7. Verify tables, functions, policies, grants, views, and representative queries.
 8. Import stock only after schema verification. Use `--dry-run` first, then one
-   unique `--batch` value per workbook intake.
+   unique `--batch` value per workbook intake:
+
+   ```bash
+   npm run stock:import -- "docs/Chappal House.xlsx" --batch 1 --dry-run
+   npm run stock:import -- "docs/Chappal House.xlsx" --batch 1
+   ```
+
+   Repeat with the next workbook and `--batch 2`. Never set `stock_qty` directly
+   and never change cost or price without a decision from the owner.
 9. Reconcile imported product counts, variant quantities, and ledger totals against
-   the workbook before enabling checkout.
+   the workbook before enabling checkout. Every `variants.stock_qty` must have a
+   matching `batch_intake` row in `stock_movements`.
+
+## What verification covers
+
+- Tables: products, variants, product_images, orders, order_items,
+  stock_movements, phone_verifications, stock_notifications, analytics_events,
+  inventory_reservations, payment_attempts, payment_events, storefront_rate_limits.
+- Required enums, indexes, views, triggers, and functions.
+- Public catalog reads go through `public_products` only.
+- No public, anon, or authenticated access to orders, payments, inventory
+  internals, or service-role-only RPCs.
+- RLS enabled on every sensitive table; security-definer functions use a
+  controlled `search_path`.
+- Duplicate Safepay events and duplicate idempotency keys are handled.
+- Missing environment configuration fails safely instead of leaking errors.
 
 ## Execution phases
 

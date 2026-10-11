@@ -21,17 +21,15 @@ Regenerates the seed. Restart `npm run dev` to pick it up.
 
 ## Once Supabase exists
 
-1. Create the project at supabase.com
-2. SQL Editor, run `packages/db/schema.sql`, then `packages/db/schema-verification.sql`, then `packages/db/commerce.sql`
-3. Copy `docs/env-template.md` values into `.env.local`
-4. Load real stock:
+Do not paste the SQL files into the SQL Editor. The schema goes in through a
+Supabase CLI migration history, and stock is imported once per batch after
+the schema is verified. [implementation-plan.md](implementation-plan.md) has
+the steps and stop conditions. Copy the values from
+[environment.md](environment.md) into `.env.local`.
 
-```bash
-npm run stock:import -- "docs/Chappal House.xlsx" --batch 1
-npm run stock:import -- "docs/batch2.xlsx" --batch 2
-```
-
-The stock import is atomic and keyed by `--batch`; rerunning the same batch does not add stock twice. Then `src/lib/catalog.ts` swaps its file read for a query against `public_products`.
+The stock import is atomic and keyed by `--batch`; rerunning the same batch
+does not add stock twice. Once stock is in, `src/lib/catalog.ts` swaps its
+file read for a query against `public_products`.
 
 ## Tests
 
@@ -40,7 +38,7 @@ node --test scripts/import-stock.test.mjs
 ```
 
 Verifies the sheet parser against the real batch 1 file: 23 products, 93 pairs,
-18 chappal / 5 khussa. If a future sheet changes shape, these fail loudly rather
+18 chappal / 5 khussa. The live catalog has 33 products across both batches. If a future sheet changes shape, these fail loudly rather
 than importing wrong stock counts.
 
 ## Images
@@ -89,5 +87,7 @@ pure helpers in `product.ts`, and anything touching disk or the database in
   (B.Fit, Stylish Shoes, New Stylo, A.B.R) is legible on the insoles.
 - **Two products have no photos** — `white-fancy` and `net` render a letter
   placeholder until shots exist.
-- **Checkout** — currently a WhatsApp deep link only. The database supports full
-  checkout with OTP verification; the UI does not yet.
+- **Checkout** — the cart, `/checkout`, order, Safepay and manual-transfer
+  routes are built but inert until the Supabase and Safepay values are set.
+  The WhatsApp deep link on product pages works without them. The schema has
+  phone OTP tables; the UI does not use them yet.
