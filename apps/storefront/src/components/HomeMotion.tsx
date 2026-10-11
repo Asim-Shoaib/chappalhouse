@@ -94,11 +94,10 @@ const makeKit = () => {
  * Recipe 7, softer: the card arrives offset up-left with no shadow, settles
  * onto its hard shadow and its rest angle. Batched so a row lands together.
  * When it has landed its inline styles are cleared (CSS holds the same rest
- * angle), so hover, which is CSS, has no competing writer.
+ * angle).
  */
-function landCards(cards: HTMLElement[], ready: boolean) {
+function landCards(cards: HTMLElement[]) {
   const fresh = cards.filter((c) => belowFold(c))
-  if (ready) cards.forEach((c) => !fresh.includes(c) && c.classList.add('card-ready'))
   if (!fresh.length) return
   const rest = new Map(fresh.map((c) => [c, restOf(c)]))
   gsap.set(fresh, {
@@ -125,7 +124,6 @@ function landCards(cards: HTMLElement[], ready: boolean) {
         stagger: 0.06,
         onComplete: () => {
           gsap.set(batch, { clearProps: 'opacity,transform,--sh' })
-          if (ready) batch.forEach((c) => c.classList.add('card-ready'))
         },
       }),
   })
@@ -211,7 +209,7 @@ export function HomeMotion() {
     })
 
     // ---------------------------------------------------------------------
-    // Layer 1: every width. Hero intro, card landings, rail, flutter, spin.
+    // Layer 1: every width. Hero intro, showcase, rail, spin.
     // ---------------------------------------------------------------------
     mm.add(NO_RM, (ctx) => {
       const undo: Array<() => void> = []
@@ -240,7 +238,7 @@ export function HomeMotion() {
         root.style.removeProperty('--hh')
       })
 
-      // Page-wide scroll velocity: read by the rail, the card flutter. Decays between scroll events.
+      // Page-wide scroll velocity: read by the rail. Decays between scroll events.
       ScrollTrigger.create({
         start: 0,
         end: 'max',
@@ -398,47 +396,106 @@ export function HomeMotion() {
         })
       }
 
-      // ---- product cards: paper flutter with scroll velocity (on the grid wrapper, which nothing else owns) ----
-      const flutterSetup = () => {
-        const wraps = $$('.grid > *')
-        if (!wraps.length) return
-        const setters = new Map(
-          wraps.map((el) => [el, gsap.quickTo(el, 'rotation', { duration: 0.45, ease: 'power3.out' })]),
-        )
-        const last = new Map<HTMLElement, number>(wraps.map((el) => [el, 0]))
-        const mult = new Map(wraps.map((el, i) => [el, (i % 2 ? 1 : -1) * (1 - 0.22 * (i % 3))]))
-        const seen = new Set<HTMLElement>()
-        const io = new IntersectionObserver(
-          (entries) =>
-            entries.forEach((e) => {
-              const el = e.target as HTMLElement
-              if (e.isIntersecting) seen.add(el)
-              else {
-                seen.delete(el)
-                if (last.get(el)) {
-                  last.set(el, 0)
-                  setters.get(el)!(0)
-                }
-              }
-            }),
-          { rootMargin: '120px 0px' },
-        )
-        wraps.forEach((el) => io.observe(el))
-        const tick = () => {
-          const extra = gsap.utils.clamp(-2, 2, fx.vel / 700)
-          seen.forEach((el) => {
-            const target = +(extra * mult.get(el)!).toFixed(2)
-            if (Math.abs(target - last.get(el)!) > 0.03) {
-              last.set(el, target)
-              setters.get(el)!(target)
-            }
+      // ---- showcase: each pair is presented as it crosses the screen ----
+      // The branch draws up from the soil and its leaves open bottom to top;
+      // the frame rises, straightens onto its rest tilt, holds through the
+      // middle of the screen and leans away as it leaves. Tape and the name
+      // plate land once. No text is scrubbed.
+      const exhibitsSetup = () => {
+        $$('.exhibit').forEach((ex, n) => {
+          const stage = ex.querySelector<HTMLElement>('.exhibit-stage')
+          const lift = ex.querySelector<HTMLElement>('.exhibit-lift')
+          const tape = ex.querySelector<HTMLElement>('.ex-tape')
+          const plate = Array.from(ex.querySelectorAll<HTMLElement>('.exhibit-plate > *'))
+          if (!stage || !lift) return
+          const dir = n % 2 ? 1 : -1 // leans towards its main branch
+
+          gsap.fromTo(
+            lift,
+            { y: 70, rotation: dir * 4, scale: 0.9 },
+            {
+              keyframes: [
+                { y: 0, rotation: 0, scale: 1, duration: 0.42, ease: 'power2.out' },
+                { duration: 0.22 },
+                { y: -36, rotation: -dir * 2, scale: 0.96, duration: 0.36, ease: 'power1.in' },
+              ],
+              ease: 'none',
+              scrollTrigger: {
+                trigger: stage,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: 0.6,
+                refreshPriority: -1,
+              },
+            },
+          )
+
+          const grow = gsap.timeline({
+            defaults: { ease: 'none' },
+            scrollTrigger: {
+              trigger: stage,
+              start: 'top 92%',
+              end: 'center 52%',
+              scrub: 0.6,
+              refreshPriority: -1,
+            },
           })
-        }
-        gsap.ticker.add(tick)
+          ex.querySelectorAll<SVGSVGElement>('.branch').forEach((svg, k) => {
+            const stems = Array.from(svg.querySelectorAll<SVGPathElement>('.stem, .stem-shadow'))
+            const len = Math.ceil(stems[0]?.getTotalLength() ?? 0)
+            if (len) grow.fromTo(stems, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1 }, k * 0.15)
+            // DOM order is bottom to top, so leaves open as the stem passes them.
+            const buds = Array.from(svg.querySelectorAll<SVGGElement>('.leaf-grow'))
+            buds.forEach((g, i) => {
+              const bloom = g.classList.contains('bloom')
+              // Origin first, on its own: set inside the tween, smoothOrigin would
+              // shift the leaf off its node to compensate for the change.
+              gsap.set(g, { transformOrigin: bloom ? '50% 50%' : '50% 100%' })
+              grow.fromTo(
+                g,
+                { scale: 0, rotation: bloom ? -90 : (i % 2 ? 1 : -1) * 30 },
+                {
+                  scale: 1,
+                  rotation: 0,
+                  duration: bloom ? 0.3 : 0.24,
+                  ease: 'back.out(2.2)',
+                },
+                k * 0.15 + 0.12 + (0.78 * (i + 1)) / (buds.length + 1),
+              )
+            })
+          })
+
+          // Leaves sway only while the pair is on screen.
+          ScrollTrigger.create({
+            trigger: ex,
+            start: 'top bottom',
+            end: 'bottom top',
+            toggleClass: 'live',
+            refreshPriority: -1,
+          })
+
+          const once = [tape, ...plate].filter(Boolean) as HTMLElement[]
+          if (!once.length || !belowFold(ex)) return
+          const tr = tape ? restOf(tape, '--rot') : 0
+          if (tape) gsap.set(tape, { opacity: 0, scale: 0.9, rotation: tr + 6 })
+          if (plate.length) gsap.set(plate, { opacity: 0, y: 14 })
+          ScrollTrigger.create({
+            trigger: stage,
+            start: 'top 62%',
+            once: true,
+            refreshPriority: -1,
+            onEnter: () => {
+              if (tape)
+                gsap.to(tape, { opacity: 1, scale: 1, rotation: tr, duration: 0.3, ease: 'power2.out', clearProps: 'opacity,transform' })
+              if (plate.length)
+                gsap.to(plate, { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: 'power2.out', delay: 0.1, clearProps: 'opacity,transform' })
+            },
+          })
+        })
         undo.push(() => {
-          gsap.ticker.remove(tick)
-          io.disconnect()
-          gsap.set(wraps, { clearProps: 'transform' })
+          gsap.set($$('.exhibit-lift, .ex-tape, .exhibit-plate > *, .branch .leaf-grow'), { clearProps: 'all' })
+          gsap.set($$('.branch .stem, .branch .stem-shadow'), { clearProps: 'strokeDasharray,strokeDashoffset' })
+          $$('.exhibit').forEach((ex) => ex.classList.remove('live'))
         })
       }
 
@@ -496,9 +553,8 @@ export function HomeMotion() {
           } finally {
             unwait() // the hero's start states are inline now, so the class can go with no frame in between
           }
-          landCards($$('.grid .card'), true)
+          exhibitsSetup()
           railSetup()
-          flutterSetup()
           spinSetup()
           ScrollTrigger.refresh()
         },
@@ -988,7 +1044,7 @@ export function HomeMotion() {
         () => !dead,
         () => {
           entryChars(kit, makeRnd(59))
-          landCards($$('.how-card'), false)
+          landCards($$('.how-card'))
           ScrollTrigger.refresh()
         },
       )
