@@ -47,3 +47,11 @@ skills-lock.json
 .wrangler/
 # Local Worker secrets for `wrangler dev`. Never committed.
 .dev.vars
+
+# graphify knowledge graph: local, regenerated on demand.
+graphify-out/
+.graphifyignore
+
+# Stray `next build` output on Windows: outputFileTracingRoot resolves to
+# apps/website/chappalhouse/... and writes a second build tree there.
+apps/website/
