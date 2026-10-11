@@ -4,8 +4,7 @@ import type { ReactNode } from 'react'
  * Cut-paper decoration: a leaf, a circle, a scalloped label and a coin. Flat
  * fills from the existing tokens (--tan, and --accent-surface once per scene),
  * a hard offset shadow drawn as a second path (no blur, no filter). Purely
- * decorative, so aria-hidden. Each scene (hero, story band, grid gutters, how
- * it works) mounts its own set, so the page reads as one system.
+ * decorative, so aria-hidden. Each scene (hero, story band, how it works) mounts its own set, so the page reads as one system.
  *
  * Every animated concern has its own node, so no element has two writers:
  *   .shape        scroll parallax (y)               HomeMotion rideShapes
@@ -30,20 +29,6 @@ const SCENES = {
     ['dot', 'sh-s2', 0.14, 12, false],
     ['label', 'sh-s3', 0.05, 26, true],
     ['coin', 'sh-s4', 0.1, 8, false],
-  ],
-  'grid-a': [
-    ['dot', 'sh-a1', 0.1, 14, false],
-    ['leaf', 'sh-a2', 0.14, 22, false],
-    ['coin', 'sh-a3', 0.08, 10, false],
-    ['label', 'sh-a4', 0.12, 24, false],
-  ],
-  'grid-b': [
-    ['label', 'sh-b1', 0.08, 24, false],
-    ['leaf', 'sh-b2', 0.12, 20, false],
-    ['dot', 'sh-b3', 0.1, 12, false],
-    ['coin', 'sh-b4', 0.14, 8, false],
-    ['leaf', 'sh-b5', 0.09, 26, false],
-    ['coin', 'sh-b6', 0.12, 10, false],
   ],
   how: [
     ['label', 'sh-w1', 0.06, 24, true],

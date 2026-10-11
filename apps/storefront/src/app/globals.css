@@ -25,6 +25,7 @@
   /* Behind a photo shown whole: the black of the studio table, so a landscape
      shot letterboxed in a portrait frame reads as one picture. Both themes. */
   --photo-mat: #15110d;
+  --leaf: #6f7a3f;
 
   --radius: 3px;
   --shell: 1180px;
@@ -124,6 +125,7 @@
     --on-invert: #f6ede0;
     --on-accent: #fff8f4;
     --accent-surface: #8d2a39;
+    --leaf: #8b9758;
 
     /* Glass inverts too. On a dark ground the tint has to be denser or text
        loses contrast against whatever scrolls beneath, and the edge highlight
@@ -2414,85 +2416,6 @@ html.home-wait .home .hero-card {
   --b: 11%;
 }
 
-/* grid gutters (Khussa a, Chappals b): only where the page has a real gutter */
-.home .sec-grid {
-  position: relative;
-  overflow-x: clip;
-}
-
-.home .sec-grid > .shell {
-  position: relative;
-  z-index: 1;
-}
-
-.home .sec-grid .shape {
-  display: none;
-}
-
-@media (min-width: 1280px) and (min-height: 501px) {
-  .home .sec-grid .shape {
-    --g: calc((100vw - 1132px) / 2);
-    --zd: min(86px, calc(var(--g) - 34px));
-    display: block;
-  }
-
-  .home .sh-a1,
-  .home .sh-a3,
-  .home .sh-b1,
-  .home .sh-b3,
-  .home .sh-b5 {
-    --l: calc(var(--g) / 2 - var(--zd) / 2);
-  }
-
-  .home .sh-a2,
-  .home .sh-a4,
-  .home .sh-b2,
-  .home .sh-b4,
-  .home .sh-b6 {
-    --r: calc(var(--g) / 2 - var(--zd) / 2);
-  }
-
-  .home .sh-a1 {
-    --t: 9%;
-  }
-
-  .home .sh-a2 {
-    --t: 18%;
-  }
-
-  .home .sh-a3 {
-    --t: 58%;
-  }
-
-  .home .sh-a4 {
-    --t: 70%;
-  }
-
-  .home .sh-b1 {
-    --t: 7%;
-  }
-
-  .home .sh-b2 {
-    --t: 17%;
-  }
-
-  .home .sh-b3 {
-    --t: 38%;
-  }
-
-  .home .sh-b4 {
-    --t: 52%;
-  }
-
-  .home .sh-b5 {
-    --t: 70%;
-  }
-
-  .home .sh-b6 {
-    --t: 86%;
-  }
-}
-
 /* how it works */
 .home .sh-w1 {
   --zd: clamp(80px, 7vw, 112px);
@@ -2554,66 +2477,6 @@ html.home-wait .home .hero-card {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-}
-
-/* --- product cards ------------------------------------------------------------- */
-
-/* Cards are cut paper pinned at slight angles. The rest angle repeats and
-   stays within 1.5deg so prices stay readable; HomeMotion reads --rest, so
-   the landing ends exactly where the static page already is. */
-.home .grid > :nth-child(5n + 1) {
-  --rest: -1.2deg;
-}
-
-.home .grid > :nth-child(5n + 2) {
-  --rest: 0.8deg;
-}
-
-.home .grid > :nth-child(5n + 3) {
-  --rest: -0.4deg;
-}
-
-.home .grid > :nth-child(5n + 4) {
-  --rest: 1deg;
-}
-
-.home .card {
-  position: relative;
-  transform: rotate(var(--rest, 0deg));
-}
-
-/* The hard shadow sits behind the photo only. It is a pseudo-element so the
-   landing can fade it through --sh without ever animating box-shadow. */
-.home .card::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 3px;
-  z-index: -1;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: var(--radius);
-  background: var(--invert-surface);
-  opacity: var(--sh, 1);
-  pointer-events: none;
-}
-
-/* Hover (fine pointer): the card straightens and lifts 4px onto a longer hard
-   shadow. Pure CSS, switched on per card (card-ready) once its landing tween is
-   finished and cleared, so the CSS transition never fights a script write. */
-@media (hover: hover) and (pointer: fine) {
-  .home .card.card-ready,
-  .home .card.card-ready::before {
-    transition: transform 300ms var(--ease-out-soft);
-  }
-
-  .home .card.card-ready:hover {
-    transform: translateY(-4px) rotate(0deg);
-  }
-
-  .home .card.card-ready:hover::before {
-    transform: translate(3px, 4px);
-  }
 }
 
 /* --- photo rail ------------------------------------------------------------------ */
@@ -2840,5 +2703,271 @@ html.home-wait .home .hero-card {
 
   .home .section-head h2 {
     font-size: clamp(2.5rem, 14svh, 4.5rem);
+  }
+}
+
+/* --- showcase: one framed portrait per pair ---------------------------------------- */
+
+/* Every pair stands in its own frame: a paper mat around the whole photo, a
+   hard shadow, a strip of tape, and a cut-paper branch climbing beside it with
+   a short sprig on the other side. Phones get one centred column; desktop gets
+   two columns with the right one dropped half a frame, so the branches run in
+   the gutters. The rest pose is all CSS; HomeMotion only animates towards it. */
+.home .showcase {
+  position: relative;
+  overflow-x: clip;
+}
+
+.home .exhibits {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: clamp(64px, 10svh, 112px);
+  margin: 0;
+  padding: 24px 0 0;
+  list-style: none;
+}
+
+.home .exhibit:nth-child(4n + 1) {
+  --tilt: -1.4deg;
+}
+
+.home .exhibit:nth-child(4n + 2) {
+  --tilt: 1.1deg;
+}
+
+.home .exhibit:nth-child(4n + 3) {
+  --tilt: -0.6deg;
+}
+
+.home .exhibit:nth-child(4n + 4) {
+  --tilt: 1.6deg;
+}
+
+.home .exhibit-link {
+  display: block;
+  width: min(70vw, 340px);
+  margin-inline: auto;
+  color: inherit;
+  text-decoration: none;
+}
+
+.home .exhibit-stage {
+  position: relative;
+}
+
+.home .exhibit-lift {
+  position: relative;
+  z-index: 1;
+}
+
+.home .exhibit-frame {
+  position: relative;
+  isolation: isolate;
+  transform: rotate(var(--tilt, 0deg));
+}
+
+.home .frame-shadow {
+  position: absolute;
+  inset: 5px -4px -5px 4px;
+  z-index: -1;
+  border-radius: var(--radius);
+  background: var(--invert-surface);
+}
+
+.home .frame-face {
+  display: block;
+  padding: clamp(8px, 2.6vw, 12px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+.home .frame-face img,
+.home .frame-face .card-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  background: var(--photo-mat);
+}
+
+.home .ex-tape {
+  --rot: -3deg;
+  position: absolute;
+  top: -12px;
+  left: 33%;
+  z-index: 2;
+  display: block;
+  width: 34%;
+  height: 24px;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper-raised) 78%, transparent);
+  transform: rotate(var(--rot));
+  pointer-events: none;
+}
+
+.home .exhibit:nth-child(even) .ex-tape {
+  --rot: 3deg;
+}
+
+/* Branches hang outside the frame and overlap only its outer edge. Main branch
+   on one side, sprig on the other, alternating pair to pair. */
+.home .branch {
+  position: absolute;
+  z-index: 2;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.home .branch-main {
+  bottom: -3%;
+  left: -24%;
+  width: 32%;
+}
+
+.home .branch-sprig {
+  right: -20%;
+  bottom: 2%;
+  width: 26%;
+}
+
+.home .exhibit:nth-child(even) .branch-main {
+  right: -24%;
+  left: auto;
+}
+
+.home .exhibit:nth-child(even) .branch-sprig {
+  right: auto;
+  left: -20%;
+}
+
+.home .stem,
+.home .stem-shadow {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.home .stem {
+  stroke: color-mix(in srgb, var(--tan) 62%, var(--invert-surface));
+}
+
+.home .stem-shadow {
+  stroke: rgb(0 0 0 / 0.22);
+}
+
+.home .cut-leaf {
+  fill: var(--leaf);
+}
+
+.home .branch .cut-vein {
+  stroke-width: 2;
+  opacity: 0.55;
+}
+
+/* A breeze through the leaves, only while the pair is on screen (.live). */
+@keyframes leaf-breeze {
+  from {
+    transform: rotate(-5deg);
+  }
+
+  to {
+    transform: rotate(5deg);
+  }
+}
+
+.home .leaf-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: leaf-breeze 4.2s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+
+.home .exhibit.live .leaf-sway {
+  animation-play-state: running;
+}
+
+.home .exhibit-plate {
+  margin-top: 26px;
+  text-align: center;
+}
+
+.home .exhibit-plate h3 {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.home .exhibit-plate p {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 14px;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.home .exhibit-sizes {
+  color: var(--ink-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .home .frame-face {
+    transition: transform 300ms var(--ease-out-soft);
+  }
+
+  .home .exhibit-link:hover .frame-face {
+    transform: translate(-2px, -3px);
+  }
+
+  .home .exhibit-link:hover h3 {
+    text-decoration: underline;
+    text-decoration-color: var(--tan);
+    text-underline-offset: 4px;
+  }
+}
+
+@media (min-width: 900px) {
+  .home .exhibits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-xl);
+    row-gap: clamp(80px, 12svh, 140px);
+  }
+
+  .home .exhibit-link {
+    width: min(76%, 380px);
+  }
+
+  /* The right column drops by a third of a screen; the negative bottom margin
+     keeps it from stretching the row, so it overhangs into the next one. */
+  .home .exhibit:nth-child(even) {
+    margin-top: 30svh;
+    margin-bottom: -30svh;
+  }
+
+  .home .exhibits:has(> .exhibit:last-child:nth-child(even)) {
+    padding-bottom: 30svh;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .home .exhibit-link {
+    width: min(40vw, calc((100svh - 150px) * 0.75));
+  }
+
+  .home .exhibit:nth-child(even) {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .home .exhibits:has(> .exhibit:last-child:nth-child(even)) {
+    padding-bottom: 0;
   }
 }

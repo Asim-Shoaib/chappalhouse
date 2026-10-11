@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { getProducts, imageUrl } from '@/lib/catalog'
-import { ProductCard } from '@/components/ProductCard'
+import { Showcase } from '@/components/Showcase'
 import { PhotoRail } from '@/components/PhotoRail'
 import { HowItWorks } from '@/components/HowItWorks'
 import { HomeMotion } from '@/components/HomeMotion'
@@ -89,8 +89,7 @@ export default async function HomePage() {
       <TornEdge tone="paper" />
 
       {khussa.length > 0 && (
-        <section className="section sec-grid">
-          <PaperShapes scene="grid-a" />
+        <section className="section showcase">
           <div className="shell">
             <div className="section-head">
               <h2>Khussa</h2>
@@ -98,11 +97,7 @@ export default async function HomePage() {
                 View all
               </Link>
             </div>
-            <div className="grid">
-              {khussa.map((p) => (
-                <ProductCard key={p.slug} product={p} />
-              ))}
-            </div>
+            <Showcase products={khussa} />
           </div>
         </section>
       )}
@@ -110,8 +105,7 @@ export default async function HomePage() {
       <PhotoRail products={products} />
 
       {chappals.length > 0 && (
-        <section className="section sec-grid">
-          <PaperShapes scene="grid-b" />
+        <section className="section showcase">
           <div className="shell">
             <div className="section-head">
               <h2>Chappals</h2>
@@ -119,11 +113,7 @@ export default async function HomePage() {
                 View all
               </Link>
             </div>
-            <div className="grid">
-              {chappals.map((p) => (
-                <ProductCard key={p.slug} product={p} />
-              ))}
-            </div>
+            <Showcase products={chappals} />
           </div>
         </section>
       )}
