@@ -22,6 +22,9 @@
   --on-invert: #faf6f0;
   --on-accent: #fff8f4;
   --accent-surface: #7c2230;
+  /* Behind a photo shown whole: the black of the studio table, so a landscape
+     shot letterboxed in a portrait frame reads as one picture. Both themes. */
+  --photo-mat: #15110d;
 
   --radius: 3px;
   --shell: 1180px;
@@ -394,7 +397,7 @@ img {
    the same reason the cards do. */
 .hero-figure {
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--line);
@@ -412,8 +415,7 @@ img {
 .hero-figure img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 50% 42%;
+  object-fit: contain;
 }
 
 .eyebrow {
@@ -458,8 +460,8 @@ img {
 }
 
 .card-frame {
-  aspect-ratio: 1 / 1;
-  background: var(--paper-raised);
+  aspect-ratio: 3 / 4;
+  background: var(--photo-mat);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   display: grid;
@@ -479,13 +481,12 @@ img {
   user-select: none;
 }
 
-/* Photos are portrait and hand-held; the hand is part of the shot, not a defect
-   to crop around. A slight upward bias centres the shoe without cutting it. */
+/* Photos are 3:4 portrait and hand-held; the frame is the same shape, so
+   contain shows the whole photo with no bars. A landscape shot sits on the mat. */
 .card-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 50% 42%;
+  object-fit: contain;
   transition: transform var(--dur-slow) var(--ease-out-soft);
 }
 
@@ -543,8 +544,9 @@ img {
 
 .pdp-frame {
   position: relative;
-  aspect-ratio: 1 / 1;
-  background: var(--paper-raised);
+  aspect-ratio: 3 / 4;
+  max-height: calc(100svh - 120px);
+  background: var(--photo-mat);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   display: grid;
@@ -649,7 +651,7 @@ img {
 .thumb {
   display: block;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
   padding: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1202,7 +1204,7 @@ img {
 }
 
 .cart-image {
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   border: 1px solid var(--line);
   background: var(--paper-raised);
@@ -1610,9 +1612,6 @@ img {
     padding-block: var(--space-xl);
   }
 
-  .pdp-frame {
-    aspect-ratio: 4 / 5;
-  }
 
   .pdp h1 {
     font-size: var(--text-xl);
@@ -1947,7 +1946,8 @@ img {
 
 .photo-rail-item img {
   width: 100%;
-  height: 325px;
+  height: auto;
+  aspect-ratio: 3 / 4;
   object-fit: cover;
   /* Same crop bias as the product cards, so a shoe sits at the same height
      whether it appears in the rail or the grid. */
@@ -2079,6 +2079,18 @@ html.home-live body {
   position: relative;
 }
 
+/* The photo is portrait and shown whole, so its width sets the hero's height. */
+.home .hero-lift {
+  justify-self: center;
+  width: min(100%, 440px);
+}
+
+@media (max-width: 879px) {
+  .home .hero-lift {
+    width: min(100%, 320px);
+  }
+}
+
 /* The photo is a cut-paper card pinned to the board: hard offset shadow, two
    strips of tape, a rest angle. The figure turns, the card steps down, the
    shadow and tape are their own nodes so only transform and opacity animate. */
@@ -2099,9 +2111,9 @@ html.home-live body {
 
 .home .hero-card {
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
-  background: var(--paper-raised);
+  background: var(--photo-mat);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
@@ -2823,8 +2835,7 @@ html.home-wait .home .hero-card {
   }
 
   .home .hero-lift {
-    justify-self: center;
-    width: min(100%, calc(100svh - 150px));
+    width: min(100%, calc((100svh - 150px) * 0.75));
   }
 
   .home .section-head h2 {
