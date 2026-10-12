@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState, type FormEvent } from 'react'
 import { useCart } from './CartProvider'
 import { formatPkr } from '@/lib/product'
+import { CartHold } from './CartPage'
 import type { ManualAccount } from '@/lib/payments/manual'
 
 async function json(response: Response): Promise<Record<string, unknown>> {
@@ -84,7 +85,7 @@ export function CheckoutForm({
     }
   }
 
-  if (!isHydrated) return <div className="commerce-page"><h1>Checkout</h1><p className="muted">Loading...</p></div>
+  if (!isHydrated) return <div className="commerce-page commerce-loading checkout-loading"><CartHold /><h1>Checkout</h1><p className="muted">Loading...</p></div>
   if (items.length === 0) return <div className="commerce-page"><h1>Checkout</h1><p>Your cart is empty.</p><Link className="button" href="/cart">Return to cart</Link></div>
 
   return (

@@ -1,3 +1,6 @@
+import { InfoMotion } from '@/components/InfoMotion'
+import { PaperWait } from '@/components/PaperWait'
+
 export const metadata = { title: 'Frequently asked questions' }
 
 const questions = [
@@ -10,15 +13,19 @@ const questions = [
 
 export default function FaqPage() {
   return (
-    <article className="shell info-page">
-      <p className="eyebrow">Questions, answered plainly</p>
-      <h1>Frequently asked questions</h1>
-      {questions.map(([question, answer]) => (
-        <details key={question}>
-          <summary>{question}</summary>
-          <p>{answer}</p>
-        </details>
-      ))}
-    </article>
+    <div className="shell info-wrap">
+      <article className="info-page info-sheet info-faq">
+        <PaperWait />
+        <InfoMotion seed="faq" />
+        <p className="eyebrow">Questions, answered plainly</p>
+        <h1>Frequently asked questions</h1>
+        {questions.map(([question, answer]) => (
+          <details key={question}>
+            <summary>{question}</summary>
+            <p>{answer}</p>
+          </details>
+        ))}
+      </article>
+    </div>
   )
 }
