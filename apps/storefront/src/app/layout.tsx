@@ -4,6 +4,9 @@ import './globals.css'
 import { PageViewTracker } from '@/components/Analytics'
 import { CartProvider } from '@/components/CartProvider'
 import { CartLink } from '@/components/CartLink'
+import { ThemeToggle } from '@/components/ThemeToggle'
+import { SideVines } from '@/components/SideVines'
+import { Keyboard } from '@/components/Keyboard'
 import { getProducts } from '@/lib/catalog'
 
 // Falls back to the production origin, not localhost. metadataBase turns the
@@ -70,10 +73,20 @@ const organizationSchema = {
   currenciesAccepted: 'PKR',
 }
 
+// Runs while the parser reaches <head>, before first paint, so a saved light
+// or dark choice never flashes the other theme. No saved choice (or no JS)
+// leaves data-theme unset and the CSS follows the system. The key is shared
+// with ThemeToggle.
+const THEME_INIT =
+  "try{var t=localStorage.getItem('chappal-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}"
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const products = await getProducts()
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+      </head>
       <body>
         <script
           type="application/ld+json"
@@ -94,12 +107,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <nav className="nav" aria-label="Main navigation">
               <Link href="/khussa">Khussa</Link>
               <Link href="/chappals">Chappals</Link>
-              <CartLink />
             </nav>
+            <div className="header-tools">
+              <ThemeToggle />
+              <CartLink />
+            </div>
           </div>
         </header>
 
-        <main id="content">{children}</main>
+        <main id="content" tabIndex={-1}>
+          {children}
+          <SideVines />
+        </main>
 
         <footer className="site-footer">
           <div className="shell footer-inner">
@@ -119,6 +138,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </ul>
           </div>
         </footer>
+        <Keyboard />
         </CartProvider>
       </body>
     </html>

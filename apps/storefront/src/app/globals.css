@@ -26,6 +26,20 @@
      shot letterboxed in a portrait frame reads as one picture. Both themes. */
   --photo-mat: #15110d;
   --leaf: #6f7a3f;
+  /* The hard offset shadow under every cut-out (cards, frames, buttons, tags)
+     and the second shape behind SVG leaves and stems. Kept apart from
+     --invert-surface, which is a SURFACE: in light both are the same dark
+     ink, but in dark a dark shadow vanishes into the page, so the shadow
+     becomes a sheet of kraft under each piece instead (see the dark block). */
+  --hard-shadow: #23190f;
+  --leaf-shadow: rgb(0 0 0 / 0.4);
+  /* Softer shades that stay ink-tinted in light; in dark they all become the
+     kraft --hard-shadow (or ink under the brass plate), since a faint light
+     shade on dark paper vanishes. */
+  --quiet-shadow: color-mix(in srgb, var(--ink) 18%, transparent);
+  --select-shadow: color-mix(in srgb, var(--ink) 14%, transparent);
+  --plate-shadow: color-mix(in srgb, var(--hard-shadow) 60%, transparent);
+  --summary-shadow: var(--glass-shadow);
 
   --radius: 3px;
   --shell: 1180px;
@@ -86,6 +100,14 @@
   --glass-line: color-mix(in srgb, var(--line) 70%, transparent);
   --glass-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent),
     0 8px 28px -12px color-mix(in srgb, var(--ink) 18%, transparent);
+
+  /* Theme. html[data-theme] holds an explicit choice (ThemeToggle, applied
+     before paint by the script in layout.tsx); without one, and without JS,
+     the system decides. --dark is 0 or 1 so CSS and JS can ask which theme is
+     showing (calc(var(--dark) * 90deg) etc.). --grain is the film grain. */
+  --dark: 0;
+  --grain: 0.028;
+  color-scheme: light;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -105,8 +127,11 @@
   }
 }
 
+/* Dark tokens, written twice with the same values: once for a dark system
+   (unless light was chosen explicitly), once for an explicit dark choice.
+   Change one, change both. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --paper: #14100c;
     --paper-raised: #1e1811;
     --ink: #f2e9dc;
@@ -127,6 +152,17 @@
     --accent-surface: #8d2a39;
     --leaf: #8b9758;
 
+    /* Shadows turn into a kraft layer that stands out from the dark paper the
+       way the ink shadow does from cream: --tan 60% into --paper is about
+       #816340, 3.4:1 on --paper and 3.2:1 on --paper-raised. Leaves get the same
+       kraft, translucent so it also reads over a frame or a photo. */
+    --hard-shadow: color-mix(in srgb, var(--tan) 60%, var(--paper));
+    --leaf-shadow: color-mix(in srgb, var(--tan) 62%, transparent);
+    --quiet-shadow: var(--hard-shadow);
+    --select-shadow: var(--hard-shadow);
+    --plate-shadow: var(--invert-surface);
+    --summary-shadow: 4px 5px 0 var(--hard-shadow);
+
     /* Glass inverts too. On a dark ground the tint has to be denser or text
        loses contrast against whatever scrolls beneath, and the edge highlight
        drops to a whisper — a bright rim on dark glass reads as a mistake. The
@@ -137,7 +173,46 @@
     --glass-edge: color-mix(in srgb, #ffffff 10%, transparent);
     --glass-line: color-mix(in srgb, var(--line) 85%, transparent);
     --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -14px rgb(0 0 0 / 0.6);
+
+    --dark: 1;
+    --grain: 0.045;
+    color-scheme: dark;
   }
+}
+
+:root[data-theme='dark'] {
+  /* Same values as the block above; see the notes there. */
+  --paper: #14100c;
+  --paper-raised: #1e1811;
+  --ink: #f2e9dc;
+  --ink-soft: #a8967f;
+  --line: #332a20;
+  --accent: #d4737f;
+  --accent-soft: #e0919b;
+  --tan: #c99a63;
+  --ok: #5faa7c;
+
+  --invert-surface: #2b2219;
+  --on-invert: #f6ede0;
+  --on-accent: #fff8f4;
+  --accent-surface: #8d2a39;
+  --leaf: #8b9758;
+  --hard-shadow: color-mix(in srgb, var(--tan) 60%, var(--paper));
+  --leaf-shadow: color-mix(in srgb, var(--tan) 62%, transparent);
+  --quiet-shadow: var(--hard-shadow);
+  --select-shadow: var(--hard-shadow);
+  --plate-shadow: var(--invert-surface);
+  --summary-shadow: 4px 5px 0 var(--hard-shadow);
+
+  --glass-tint: color-mix(in srgb, var(--paper) 82%, transparent);
+  --glass-tint-strong: color-mix(in srgb, var(--paper) 92%, transparent);
+  --glass-edge: color-mix(in srgb, #ffffff 10%, transparent);
+  --glass-line: color-mix(in srgb, var(--line) 85%, transparent);
+  --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -14px rgb(0 0 0 / 0.6);
+
+  --dark: 1;
+  --grain: 0.045;
+  color-scheme: dark;
 }
 
 *,
@@ -191,14 +266,8 @@ body::after {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.028;
+  opacity: var(--grain);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@media (prefers-color-scheme: dark) {
-  body::after {
-    opacity: 0.045;
-  }
 }
 
 a {
@@ -211,16 +280,34 @@ a {
   top: var(--space-xs);
   left: var(--space-xs);
   z-index: 70;
-  padding: 8px 12px;
-  background: var(--invert-surface);
-  color: var(--on-invert);
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
   font-size: var(--text-sm);
-  transform: translateY(-150%);
+  box-shadow: 3px 4px 0 var(--hard-shadow);
+  /* A taped paper label: parked above the screen, it slides down on focus. */
+  transform: translateY(-220%) rotate(-1.5deg);
   transition: transform var(--dur-fast) var(--ease-out-soft);
 }
 
+.skip-link::before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 48px;
+  height: 18px;
+  margin-left: -24px;
+  border: 1px solid color-mix(in srgb, var(--tan) 40%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--tan) 52%, transparent);
+  transform: rotate(3deg);
+}
+
 .skip-link:focus {
-  transform: translateY(0);
+  transform: translateY(0) rotate(-1.5deg);
 }
 
 img {
@@ -298,16 +385,24 @@ img {
 
 .header-inner {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
   gap: var(--space-md);
-  padding-block: var(--space-md);
+  padding-block: 10px;
 }
 
+/* Wordmark left, text nav, then the theme toggle and cart pinned in the
+   top-right corner. The wordmark pushes the rest right. */
 .wordmark {
+  margin-right: auto;
+  min-width: 0;
+  overflow: hidden;
+  /* A 44px tap target, the header's own height, so nothing moves. */
+  line-height: 44px;
   font-family: var(--serif);
   font-size: var(--text-lg);
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .nav {
@@ -319,15 +414,22 @@ img {
   white-space: nowrap;
 }
 
+/* 44px tall tap targets; the hover rule is an underline so it can sit by
+   the text rather than at the bottom of the taller box. */
 .nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
   color: var(--ink-soft);
-  padding-bottom: 2px;
-  border-bottom: 1px solid transparent;
+  text-decoration: underline 1px transparent;
+  text-underline-offset: 5px;
 }
 
 .nav a:hover {
   color: var(--ink);
-  border-bottom-color: var(--accent);
+  text-decoration-color: var(--accent);
 }
 
 .nav a:active {
@@ -381,17 +483,6 @@ img {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 30px;
-}
-
-.button-quiet {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-.button-quiet:hover {
-  background: transparent;
-  border-color: var(--tan);
 }
 
 /* Slight rotation and a warm ground plate keep the hero from reading like a
@@ -618,9 +709,11 @@ img {
   right: var(--space-xs);
 }
 
-/* Touch has no hover, so the arrows would never appear. */
+/* Touch has no hover, so the arrows would never appear; and a finger needs 44px. */
 @media (hover: none) {
   .gallery-arrow {
+    width: 44px;
+    height: 44px;
     opacity: 1;
   }
 }
@@ -770,35 +863,99 @@ img {
   text-decoration: none;
 }
 
+/* --- buttons: paper-craft ------------------------------------------------ */
+
+/* A button is a paper card on its own hard shadow. The face and the shadow
+   are pseudo-elements behind the label (the button isolates, so they stay
+   inside it), which keeps every state change to transform and opacity:
+     rest    shadow 3px down-right
+     hover   face lifts 2px up-left, the shadow stays put, so it reads longer
+     active  face presses 2px down-right onto the shadow (90ms)
+   Neither pseudo-element takes space, so the button's size never changes.
+   Colours come from --face, --face-edge and --face-shadow, so a variant only
+   swaps those. */
 .button {
+  --face: var(--accent-surface);
+  --face-edge: var(--accent-surface);
+  --face-shadow: var(--hard-shadow);
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: 15px 28px;
-  background: var(--accent-surface);
+  background: transparent;
   color: var(--on-accent);
   border-radius: var(--radius);
   font-size: var(--text-sm);
   letter-spacing: 0.02em;
-  border: 1px solid var(--accent-surface);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out-soft);
+}
+
+.button::before,
+.button::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.button::before {
+  z-index: -2;
+  background: var(--face-shadow);
+  transform: translate(3px, 3px);
   transition:
-    background var(--dur-fast) var(--ease-out-soft),
-    border-color var(--dur-fast) var(--ease-out-soft),
-    transform var(--dur-fast) var(--ease-out-soft);
+    transform var(--dur-fast) var(--ease-out-soft),
+    opacity var(--dur-fast) var(--ease-out-soft);
 }
 
-.button:hover {
-  background: var(--accent-soft);
-  border-color: var(--accent-soft);
+.button::after {
+  z-index: -1;
+  border: 1px solid var(--face-edge);
+  background: var(--face);
 }
 
-.button:active {
-  transform: translateY(1px);
+.button.button-quiet {
+  --face: var(--paper);
+  --face-edge: var(--line);
+  --face-shadow: var(--quiet-shadow);
+  color: var(--ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover:not(:disabled) {
+    transform: translate(-2px, -2px);
+  }
+
+  .button:hover:not(:disabled)::before {
+    transform: translate(5px, 5px);
+  }
+
+  .button.button-quiet:hover:not(:disabled) {
+    --face-edge: var(--tan);
+  }
+}
+
+.button:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  transition-duration: 90ms;
+}
+
+.button:active:not(:disabled)::before {
+  transform: translate(1px, 1px);
+  transition-duration: 90ms;
 }
 
 .button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.button:disabled::before {
+  opacity: 0;
 }
 
 .whatsapp-link,
@@ -819,15 +976,24 @@ img {
   border-bottom-color: var(--accent);
 }
 
-.cart-link span {
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
+/* A 44px tap target: the rule moves to an underline at the old border's
+   place, and the margins give the extra height back. */
+.quiet-link {
+  min-height: 44px;
+  margin-block: 2px -10px;
+  border-bottom: 0;
+  text-decoration: underline 1px var(--line);
+  text-underline-offset: 6px;
+}
+
+.quiet-link:hover {
+  text-decoration-color: var(--accent);
 }
 
 @media (max-width: 520px) {
   .header-inner {
-    align-items: center;
-    padding-block: var(--space-sm);
+    gap: var(--space-xs);
+    padding-block: 6px;
   }
 
   .wordmark {
@@ -835,8 +1001,9 @@ img {
   }
 
   .nav {
+    gap: var(--space-xs);
     font-size: var(--text-2xs);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.06em;
   }
 
   .hero-inner {
@@ -923,6 +1090,19 @@ img {
   display: grid;
   gap: 7px;
   color: var(--ink-soft);
+}
+
+/* Touch: each link is a 44px row, so the list opens up a little. */
+@media (pointer: coarse) {
+  .footer-list {
+    gap: 0;
+  }
+
+  .footer-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
 }
 
 .catalog-controls {
@@ -1163,6 +1343,46 @@ img {
   padding-block: var(--space-3xl);
 }
 
+/* Before the cart is read from storage, hold about a two-line cart's height
+   (measured), so the footer and the side vines (placed by % of the page)
+   do not jump when the lines render. */
+.commerce-loading {
+  min-height: 836px;
+}
+
+.checkout-loading {
+  min-height: 1322px;
+}
+
+@media (max-width: 720px) {
+  .commerce-loading {
+    min-height: 1130px;
+  }
+
+  .checkout-loading {
+    min-height: 1640px;
+  }
+}
+
+/* An empty stored cart (CartPage CartHold): hold the empty state's height. */
+html.cart-none .commerce-loading {
+  min-height: 840px;
+}
+
+html.cart-none .checkout-loading {
+  min-height: 477px;
+}
+
+@media (max-width: 720px) {
+  html.cart-none .commerce-loading {
+    min-height: 636px;
+  }
+
+  html.cart-none .checkout-loading {
+    min-height: 319px;
+  }
+}
+
 .commerce-page > h1,
 .commerce-head h1,
 .order-received h1 {
@@ -1225,6 +1445,13 @@ img {
   font-weight: 400;
 }
 
+/* 44px tall to the finger; the negative margin gives the height back. */
+.cart-copy h2 a {
+  display: inline-block;
+  padding-block: 10px;
+  margin-block: -10px;
+}
+
 .cart-copy p {
   margin: 3px 0;
   color: var(--ink-soft);
@@ -1283,6 +1510,8 @@ img {
 }
 
 .cart-remove {
+  min-width: 44px;
+  min-height: 44px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1316,7 +1545,7 @@ img {
   padding: var(--space-md);
   border: 1px solid var(--glass-line);
   background: var(--glass-tint-strong);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--summary-shadow);
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
@@ -1424,6 +1653,7 @@ img {
 .checkout-form input:not([type='radio']):not([type='checkbox']),
 .checkout-form textarea {
   width: 100%;
+  min-height: 44px;
   padding: 11px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1458,13 +1688,19 @@ img {
 
 .policy-check {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 9px;
+  /* The whole row is the checkbox's 44px target. */
+  min-height: 44px;
   font-size: var(--text-sm);
 }
 
 .policy-check a {
-  border-bottom: 1px solid var(--line);
+  display: inline-block;
+  padding-block: 11px;
+  margin-block: -11px;
+  text-decoration: underline 1px var(--line);
+  text-underline-offset: 4px;
 }
 
 .form-error {
@@ -1944,6 +2180,8 @@ img {
   position: relative;
   flex: 0 0 auto;
   width: 260px;
+  /* Focus scrolls the page to show the ring too, not just the print. */
+  scroll-margin-block: 16px;
 }
 
 .photo-rail-item img {
@@ -1980,10 +2218,14 @@ img {
   /* Motion off: fall back to a plain scroller the reader drives. */
   .photo-rail {
     overflow-x: auto;
+    /* A focused print scrolls in clear of the 8% fade, ring and all. */
+    scroll-padding-inline: 10%;
   }
 
   .photo-rail-track {
     animation: none;
+    /* Room for the first and last print to clear the fade too. */
+    padding-inline: 10%;
   }
 }
 
@@ -2024,7 +2266,7 @@ img {
    Scoped to .home (app/page.tsx), driven by components/HomeMotion.tsx.
    Existing tokens only: --tan is the second paper stock (shapes, tape and the
    torn edges, never text), --accent-surface is the one accent shape per scene,
-   --invert-surface is the hard paper shadow. Nothing here blurs, and every rest
+   --hard-shadow is the hard paper shadow. Nothing here blurs, and every rest
    angle is <= 1.5deg except the hero card (2deg). The page is complete with JS
    off and under reduced motion; HomeMotion only adds movement. Classes it puts
    on .home while a layer is live: deck-on (desktop pins), stack-on (phone
@@ -2133,7 +2375,7 @@ html.home-live body {
   inset: 4px -3px -4px 3px;
   z-index: -1;
   border-radius: var(--radius);
-  background: var(--invert-surface);
+  background: var(--hard-shadow);
 }
 
 .home .tape {
@@ -2321,29 +2563,6 @@ html.home-wait .home .hero-card {
   overflow: visible;
 }
 
-.home .cut-tan {
-  fill: var(--tan);
-}
-
-.home .cut-accent {
-  fill: var(--accent-surface);
-}
-
-.home .cut-shadow {
-  fill: rgb(0 0 0 / 0.4);
-}
-
-.home .cut-hole {
-  fill: var(--invert-surface);
-}
-
-.home .cut-vein {
-  fill: none;
-  stroke: var(--invert-surface);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-}
-
 @media (min-width: 1100px) and (min-height: 501px) {
   .home .shape {
     display: block;
@@ -2529,7 +2748,7 @@ html.home-wait .home .hero-card {
   inset: 4px -3px -4px 3px;
   z-index: -1;
   border-radius: var(--radius);
-  background: var(--invert-surface);
+  background: var(--hard-shadow);
   opacity: var(--sh, 1);
   pointer-events: none;
 }
@@ -2723,7 +2942,9 @@ html.home-wait .home .hero-card {
   grid-template-columns: minmax(0, 1fr);
   row-gap: clamp(64px, 10svh, 112px);
   margin: 0;
-  padding: 24px 0 0;
+  /* The first main branch's bloom (and the tree limb to it) rises above its
+     frame; this keeps it clear of the section heading. */
+  padding: 96px 0 0;
   list-style: none;
 }
 
@@ -2771,7 +2992,7 @@ html.home-wait .home .hero-card {
   inset: 5px -4px -5px 4px;
   z-index: -1;
   border-radius: var(--radius);
-  background: var(--invert-surface);
+  background: var(--hard-shadow);
 }
 
 .home .frame-face {
@@ -2818,9 +3039,6 @@ html.home-wait .home .hero-card {
 .home .branch {
   position: absolute;
   z-index: 2;
-  height: auto;
-  overflow: visible;
-  pointer-events: none;
 }
 
 .home .branch-main {
@@ -2843,52 +3061,6 @@ html.home-wait .home .hero-card {
 .home .exhibit:nth-child(even) .branch-sprig {
   right: auto;
   left: -20%;
-}
-
-.home .stem,
-.home .stem-shadow {
-  fill: none;
-  stroke-width: 5;
-  stroke-linecap: round;
-}
-
-.home .stem {
-  stroke: color-mix(in srgb, var(--tan) 62%, var(--invert-surface));
-}
-
-.home .stem-shadow {
-  stroke: rgb(0 0 0 / 0.22);
-}
-
-.home .cut-leaf {
-  fill: var(--leaf);
-}
-
-.home .branch .cut-vein {
-  stroke-width: 2;
-  opacity: 0.55;
-}
-
-/* A breeze through the leaves, only while the pair is on screen (.live). */
-@keyframes leaf-breeze {
-  from {
-    transform: rotate(-5deg);
-  }
-
-  to {
-    transform: rotate(5deg);
-  }
-}
-
-.home .leaf-sway {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: leaf-breeze 4.2s ease-in-out infinite alternate;
-  animation-play-state: paused;
-}
-
-.home .exhibit.live .leaf-sway {
-  animation-play-state: running;
 }
 
 .home .exhibit-plate {
@@ -2970,4 +3142,707 @@ html.home-wait .home .hero-card {
   .home .exhibits:has(> .exhibit:last-child:nth-child(even)) {
     padding-bottom: 0;
   }
+}
+
+/* --- cut-paper: fills and branches (any page) --------------------------------------- */
+
+/* The flat fills of the cut-paper language, shared by PaperShapes, Branch,
+   ThemeToggle and the cart bag. The shadow is always a second shape offset
+   behind the first, never a blur. */
+.cut-tan {
+  fill: var(--tan);
+}
+
+.cut-accent {
+  fill: var(--accent-surface);
+}
+
+.cut-leaf {
+  fill: var(--leaf);
+}
+
+.cut-shadow {
+  fill: var(--leaf-shadow);
+}
+
+.cut-hole {
+  fill: var(--invert-surface);
+}
+
+.cut-vein {
+  fill: none;
+  stroke: var(--invert-surface);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+/* Branch (components/Branch.tsx). The svg sizes itself from its width; the
+   page positions it (the homepage exhibit rules sit with .home). */
+.branch {
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.stem,
+.stem-shadow {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.stem {
+  stroke: color-mix(in srgb, var(--tan) 62%, var(--invert-surface));
+}
+
+.stem-shadow {
+  stroke: color-mix(in srgb, var(--leaf-shadow) 55%, transparent);
+}
+
+.branch .cut-vein {
+  stroke-width: 2;
+  opacity: 0.55;
+}
+
+/* A hanging Branch: flipped so it grows down from its root, with the offset
+   shadows flipped back so the light still falls from the top left (the
+   policy-page .info-branch does the same). */
+.branch-hang {
+  transform: scaleY(-1);
+}
+
+.branch-hang .cut-shadow {
+  transform: translate(3px, -3px);
+}
+
+.branch-hang .stem-shadow {
+  transform: translate(2px, -3px);
+}
+
+/* A breeze through the leaves, only while an ancestor is on screen (.live). */
+@keyframes leaf-breeze {
+  from {
+    transform: rotate(-5deg);
+  }
+
+  to {
+    transform: rotate(5deg);
+  }
+}
+
+.leaf-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: leaf-breeze 4.2s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+
+.live .leaf-sway {
+  animation-play-state: running;
+}
+
+/* --- side vines (components/SideVines.tsx) ------------------------------------- */
+
+/* Vines in the outer gutters, outside the 1180px shell, wide screens only.
+   --g is one gutter; each vine is sized so its leaves (about 0.3 x width past
+   either side of the svg) stay inside the gutter plus 16px of the 24px shell
+   padding, and centred in that strip. Behind the page (z-index -1; <main> is
+   not a stacking context), so bands and frames cover them; clipped to <main>
+   so they never reach the header or footer or scroll the page sideways. With
+   JS they wait (scripting media query) until SideVines has written their start
+   states, 2s at most; without JS they stand fully drawn. */
+.side-vines {
+  display: none;
+}
+
+@keyframes side-vines-show {
+  to {
+    visibility: visible;
+  }
+}
+
+@media (min-width: 1280px) {
+  #content {
+    position: relative;
+  }
+
+  .side-vines {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: block;
+    overflow: clip;
+    pointer-events: none;
+  }
+
+  .side-vine {
+    --g: calc((100% - var(--shell)) / 2);
+    --w: min(150px, calc((var(--g) + 16px) / 1.75));
+    position: absolute;
+    left: calc((var(--g) + 16px - var(--w)) / 2);
+    width: var(--w);
+  }
+
+  .side-vine-r {
+    right: calc((var(--g) + 16px - var(--w)) / 2);
+    left: auto;
+  }
+
+  .side-vine .branch {
+    display: block;
+    width: 100%;
+  }
+}
+
+@media (scripting: enabled) {
+  .side-vines:not(.ready) {
+    visibility: hidden;
+    animation: side-vines-show 1ms 2s forwards;
+  }
+}
+
+/* --- theme toggle --------------------------------------------------------------- */
+
+/* A cut-paper sun that turns away into a moon. Keyed on --dark, so it moves
+   whether the theme changed by click or by the system. */
+.header-tools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  /* The cart's icon sits centred in its 44px box; pull it to the shell edge. */
+  margin-right: -9px;
+}
+
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.theme-toggle svg {
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+}
+
+.tt-sun,
+.tt-moon {
+  transform-origin: 12px 12px;
+  transition:
+    transform 400ms var(--ease-out-soft),
+    opacity 400ms var(--ease-out-soft);
+}
+
+.tt-sun {
+  opacity: calc(1 - var(--dark));
+  transform: rotate(calc(var(--dark) * 120deg)) scale(calc(1 - var(--dark) * 0.5));
+}
+
+.tt-moon {
+  opacity: var(--dark);
+  transform: rotate(calc((1 - var(--dark)) * -120deg)) scale(calc(0.5 + var(--dark) * 0.5));
+}
+
+/* Only while a toggle is happening (ThemeToggle adds and removes it), so the
+   page crossfades instead of snapping. The one colour transition on the site. */
+.theme-fade body {
+  transition:
+    background-color 300ms var(--ease-in-out-soft),
+    color 300ms var(--ease-in-out-soft);
+}
+
+/* --- cart icon -------------------------------------------------------------------- */
+
+/* A paper shopping bag with a round paper tag for the count. CartLink bumps
+   the bag and pops the tag (WAAPI) when the count rises. */
+.cart-link {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--ink);
+}
+
+.cart-bag {
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+}
+
+.cart-fold {
+  fill: none;
+  stroke: var(--invert-surface);
+  stroke-width: 1;
+  opacity: 0.35;
+}
+
+.cart-handle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* --on-accent on --accent-surface: about 9:1 light, 8:1 dark. */
+.cart-count {
+  position: absolute;
+  top: 3px;
+  right: 0;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent-surface);
+  color: var(--on-accent);
+  box-shadow: 1px 2px 0 var(--hard-shadow);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 19px;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* At 360px the wordmark, two nav links and two 44px tools only just fit. */
+@media (max-width: 400px) {
+  .site-header .shell {
+    padding-inline: 14px;
+  }
+
+  .wordmark {
+    font-size: var(--text-base);
+  }
+
+  .header-inner,
+  .nav {
+    gap: 10px;
+  }
+
+  .nav {
+    letter-spacing: 0.04em;
+  }
+}
+
+/* --- fly to cart ------------------------------------------------------------------ */
+
+/* The thumbnail lib/flyToCart.ts sends to the cart: the photo on a paper mat
+   with a strip of tape, on a hard shadow. Fixed, so it never widens the page;
+   above the header and the grain. */
+.fly-card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  width: 72px;
+  height: 88px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  box-shadow: 4px 5px 0 var(--hard-shadow);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.fly-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--photo-mat);
+}
+
+.fly-card::after {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 30%;
+  width: 40%;
+  height: 12px;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper-raised) 78%, transparent);
+  transform: rotate(-4deg);
+}
+
+/* --- price tag -------------------------------------------------------------------- */
+
+/* components/ui/PriceTag.tsx. A manila swing tag: notched end, punched hole,
+   a string through it, resting a little crooked on a hard shadow. Text is
+   --invert-surface on --tan, neither of which swaps between themes: 5.2:1
+   light, 6.2:1 dark. Sizes scale everything through font-size (em). */
+.price-tag {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  margin-left: 0.8em;
+  font-family: var(--serif);
+  font-size: var(--text-md);
+  line-height: 1;
+  vertical-align: middle;
+  transform: rotate(-1.5deg);
+}
+
+.price-tag-sm {
+  font-size: var(--text-sm);
+}
+
+.price-tag-lg {
+  font-size: var(--text-xl);
+}
+
+.price-tag::before,
+.price-tag-face {
+  clip-path: polygon(0.7em 0, 100% 0, 100% 100%, 0.7em 100%, 0 50%);
+  -webkit-mask: radial-gradient(circle at 0.75em 50%, transparent 0.16em, #000 calc(0.16em + 0.5px));
+  mask: radial-gradient(circle at 0.75em 50%, transparent 0.16em, #000 calc(0.16em + 0.5px));
+}
+
+.price-tag::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--hard-shadow);
+  transform: translate(3px, 3px);
+}
+
+.price-tag-face {
+  display: block;
+  padding: 0.42em 0.7em 0.42em 1.25em;
+  border-radius: 0 2px 2px 0;
+  background: var(--tan);
+  color: var(--invert-surface);
+  font-variant-numeric: lining-nums tabular-nums;
+  white-space: nowrap;
+}
+
+/* The string, tied off to the left and threaded through the hole. */
+.price-tag::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -0.8em;
+  width: 1.55em;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--ink-soft);
+  transform: translateY(-50%) rotate(22deg);
+  transform-origin: 100% 50%;
+}
+
+/* --- size stamps ------------------------------------------------------------------ */
+
+/* components/ui/SizeChips.tsx. Each size is a paper stamp on a hard shadow
+   with a dashed stitch line inset from its edge. In SizePicker the chosen
+   stamp presses down onto its shadow and a tan check lands on its corner. */
+.size-stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.size-stamp {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.size-stamp::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--radius);
+  background: var(--hard-shadow);
+  transform: translate(2px, 2px);
+}
+
+.size-stamp-face {
+  display: grid;
+  place-items: center;
+  min-width: 2.6em;
+  padding: 0.35em 0.55em;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+  outline: 1px dashed color-mix(in srgb, var(--tan) 85%, transparent);
+  outline-offset: -4px;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  transition: transform 300ms var(--ease-out-soft);
+}
+
+.size-stamps-sm {
+  gap: 6px;
+}
+
+.size-stamps-sm .size-stamp-face {
+  padding: 0.3em 0.45em;
+  outline-offset: -3px;
+  font-size: var(--text-2xs);
+}
+
+.size-stamps-md .size-stamp-face {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: var(--text-sm);
+}
+
+.size-picker .size-stamp {
+  cursor: pointer;
+}
+
+.size-picker .size-stamp[aria-checked='true'] .size-stamp-face {
+  border-color: var(--accent-surface);
+  background: var(--accent-surface);
+  color: var(--on-accent);
+  outline-color: color-mix(in srgb, var(--on-accent) 55%, transparent);
+  transform: translate(2px, 2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .size-picker .size-stamp:hover .size-stamp-face {
+    border-color: var(--tan);
+  }
+}
+
+.size-stamp-check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.4) rotate(-30deg);
+  transition:
+    transform 350ms var(--ease-out-soft),
+    opacity 200ms var(--ease-out-soft);
+}
+
+.size-stamp[aria-checked='true'] .size-stamp-check {
+  opacity: 1;
+  transform: translate(2px, 2px) rotate(-8deg);
+}
+
+.size-stamp-check circle,
+.pselect-check circle {
+  fill: var(--tan);
+}
+
+.size-stamp-check path,
+.pselect-check path {
+  fill: none;
+  stroke: var(--invert-surface);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- select ----------------------------------------------------------------------- */
+
+/* components/ui/Select.tsx. A paper button on a hard shadow; the list is a
+   sheet that unfolds from its top edge (motion/react does the unfold). */
+.pselect {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+.pselect-label {
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pselect-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 150px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  box-shadow: 3px 3px 0 var(--select-shadow);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pselect-caret {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 280ms var(--ease-out-soft);
+}
+
+.pselect-button[aria-expanded='true'] .pselect-caret {
+  transform: rotate(180deg);
+}
+
+.pselect-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 5;
+  min-width: 100%;
+  margin: 0;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  box-shadow: 4px 5px 0 var(--hard-shadow);
+  list-style: none;
+}
+
+.pselect-list:focus {
+  outline: none;
+}
+
+.pselect-list:focus-visible {
+  outline: 2px solid var(--tan);
+  outline-offset: 2px;
+}
+
+.pselect-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 2px;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pselect-option[data-active] {
+  background: color-mix(in srgb, var(--tan) 18%, transparent);
+}
+
+.pselect-check {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  transform: rotate(-8deg);
+}
+
+/* --- keyboard and focus --------------------------------------------------------
+   Everything here is :focus-visible only, so mouse and touch see no change.
+   The ring is a stitch: 2px dashed --accent, 3px off the edge. --accent against
+   the page is 9.2:1 light / 5.9:1 dark (--paper-raised 9.9:1 / 5.5:1). Over a
+   photo the light accent drops to 1.9:1 on the photo mat, so rings that can sit
+   over photos carry a paper halo (--ring-halo) on both sides of the stitch.
+   Framed cards draw the ring inward, on their own paper mat, where no clipping
+   ancestor (the grids are overflow-x: clip) can cut it. -------------------- */
+
+:root {
+  --header-h: 65px; /* 44px tools + 2 x 10px padding + 1px rule */
+  --ring: 2px dashed var(--accent);
+  --ring-offset: 3px;
+  --ring-halo: 0 0 0 7px var(--paper);
+}
+
+/* Focus scrolled into view never lands under the sticky header. */
+html {
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+/* The skip link's target takes focus (tabindex=-1) but needs no ring. */
+#content:focus {
+  outline: none;
+}
+
+html :is(a, button, summary):focus-visible {
+  outline: var(--ring);
+  outline-offset: var(--ring-offset);
+}
+
+html .pselect-list:focus-visible,
+html .info-wrap .info-faq summary:focus-visible {
+  outline: var(--ring);
+}
+
+/* Over the photo: stitch with paper either side. */
+html .gallery-arrow:focus-visible {
+  box-shadow: var(--ring-halo), var(--glass-shadow);
+}
+
+/* Card-like links: the ring goes round the frame, and it lifts as on hover. */
+html .pcard-link:focus-visible,
+html .home .exhibit-link:focus-visible,
+html .home .cl-item:focus-visible {
+  outline: none;
+}
+
+html .pcard-link:focus-visible .pcard-face {
+  outline: var(--ring);
+  outline-offset: -5px;
+  transform: translate(-2px, -3px);
+}
+
+html .home .exhibit-link:focus-visible .frame-face {
+  outline: var(--ring);
+  outline-offset: -6px;
+  transform: translate(-2px, -3px);
+}
+
+.pcard-link:focus-visible .pcard-name,
+.home .exhibit-link:focus-visible h3 {
+  text-decoration: underline;
+  text-decoration-color: var(--tan);
+  text-underline-offset: 4px;
+}
+
+/* Hero prints overlap, so this ring sits outside the print with its halo. */
+html .home .cl-item:focus-visible .cl-face {
+  outline: var(--ring);
+  outline-offset: var(--ring-offset);
+  box-shadow: var(--ring-halo);
+}
+
+.home .cl-item:focus-visible .cl-frame {
+  transform: rotate(calc(var(--r) * 0.35)) translate(-3px, -8px) scale(1.06);
+}
+
+.home .cl-item:focus-visible .cl-shadow {
+  transform: translate(4px, 7px);
+}
+
+/* While script drives the rail, the browser must not scroll it sideways to a
+   focused print (HomeMotion brings the print into view instead). */
+.home.rail-js .photo-rail {
+  overflow: clip;
 }
