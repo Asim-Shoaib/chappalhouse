@@ -48,7 +48,7 @@ export function PhotoRail({ products }: { products: Product[] }) {
                 src={thumbUrl(image)}
                 alt={isClone ? '' : product.name}
                 width={260}
-                height={325}
+                height={347}
                 sizes="260px"
               />
               <span className="photo-rail-name">{product.name}</span>

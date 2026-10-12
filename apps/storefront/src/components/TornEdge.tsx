@@ -4,9 +4,9 @@
  * the SVG hangs upward from the seam. Static decoration (aria-hidden), two
  * layers so the edge reads as paper with a kraft under-layer, not a zigzag.
  *
- *   dark   the story band's colour (hero to band)
- *   paper  the page colour (band to the product grids)
- *   tint   the how-it-works band's tint (grids to how it works)
+ *   dark   the story strip's colour (product grids to the strip)
+ *   paper  the page colour
+ *   tint   the how-it-works band's tint (story strip to how it works)
  */
 function jag(seed: number, amp: number, base: number) {
   let s = seed

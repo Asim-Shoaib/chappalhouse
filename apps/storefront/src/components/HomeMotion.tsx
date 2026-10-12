@@ -5,6 +5,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import Lenis from 'lenis'
+import { plantTree } from './homeTree'
+import { finishOnFocus } from '@/lib/paperMotion'
 
 /**
  * Homepage motion, warm tactile / paper-craft. Mounted only by app/page.tsx;
@@ -19,17 +21,27 @@ import Lenis from 'lenis'
  *    written here, right before they play. The one exception is the hero,
  *    which is hidden before first paint by an inline script (see page.tsx and
  *    the "home-wait" rules in globals.css) because it is above the fold;
- *  - one writer per element (see the node chains in PaperShapes and the hero
- *    wrappers in page.tsx);
+ *  - one writer per element (see the node chains in PaperShapes, HeroCollage,
+ *    Showcase and homeTree);
  *  - every matchMedia layer returns its own cleanup;
  *  - no scrubbed text on phones: a scrub rests half-faded wherever a finger
- *    stops, so phones get once-only entrances instead.
+ *    stops, so phones get once-only entrances instead;
+ *  - nothing is pinned before the products: the only pin is the how-it-works
+ *    deck, after them;
+ *  - nothing focusable stays hidden: keyboard focus inside the hero, an
+ *    exhibit or a section head finishes that entrance at once (finishOnFocus
+ *    or the owner's own settle), and a focused rail print is brought on screen.
+ *
+ * The homepage tree (homeTree.ts) is drawn by one scrubbed front: a line at
+ * FRONT of the viewport. Everything in the grove above it is grown, so the
+ * trunk's tip leads the reader down the page, each limb reaches its exhibit
+ * and that exhibit's main branch then grows down from its bloom.
  */
 
 const NO_RM = '(prefers-reduced-motion: no-preference)'
 // A three-card stack plus its heading needs about 490px under the header, so the scenes need
 // a viewport at least 580px tall; anything shorter gets plain landings instead.
-// Desktop: pinned story band and pinned how-it-works deck.
+// Desktop: pinned how-it-works deck, scrubbed section heads.
 const DECK = `${NO_RM} and (min-width: 900px) and (min-height: 580px)`
 // Portrait phones: CSS sticky stack, no pins.
 const PHONE = `${NO_RM} and (max-width: 899px) and (min-height: 580px)`
@@ -38,6 +50,13 @@ const SHORT = `${NO_RM} and (max-height: 579px)`
 const WIDE = `${NO_RM} and (min-width: 1100px) and (min-height: 501px)`
 const COMPACT = `${NO_RM} and (max-width: 1099px), ${NO_RM} and (max-height: 500px)`
 const FINE = `${NO_RM} and (hover: hover) and (pointer: fine)`
+
+// Where the tree's growing tip sits, as a fraction of the viewport from the top.
+const FRONT = 0.85
+// Scroll, in viewports, over which an exhibit's main branch grows once its limb has arrived.
+const BRANCH_RUN = 0.26
+// Cursor depth of each hero board print (cycled).
+const DEPTH = [0.5, 1.2, 0.8, 1.4, 0.65, 1.0, 1.3]
 
 // Unit of scroll for the deck: one timeline unit is this fraction of a viewport.
 const DECK_UNIT = 0.4
@@ -76,6 +95,33 @@ const restOf = (el: Element, name = '--rest') =>
  * Only elements still wholly below the fold get a hidden start state.
  */
 const belowFold = (el: Element) => el.getBoundingClientRect().top > innerHeight
+
+/**
+ * A text entrance that is already on screen at load waits for the reader's
+ * first scroll instead of playing (or resting half-scrubbed) before they have
+ * moved. Lenis scrolls the window too, so one native listener covers both.
+ */
+function onFirstScroll(play: () => void, undo: Array<() => void>) {
+  const go = () => {
+    removeEventListener('scroll', go)
+    play()
+  }
+  addEventListener('scroll', go, { passive: true })
+  undo.push(() => removeEventListener('scroll', go))
+}
+
+/** Section head chars drop onto the board once: from above, with a rotation settle. */
+function dropHead(chars: HTMLElement[], rest: number[], fs: number, vars: gsap.TimelineVars = {}) {
+  return gsap
+    .timeline(vars)
+    .fromTo(
+      chars,
+      { y: -fs * 0.6, rotation: (i: number) => (i % 2 ? 1 : -1) * (8 + ((i * 3) % 4)) },
+      { y: 0, rotation: (i: number) => rest[i], duration: 0.6, ease: 'back.out(1.4)', stagger: 0.05 },
+      0,
+    )
+    .fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.2, stagger: 0.05 }, 0)
+}
 
 /** Every split goes through one kit, so a layer's cleanup can revert them all. */
 const makeKit = () => {
@@ -127,6 +173,36 @@ function landCards(cards: HTMLElement[]) {
         },
       }),
   })
+}
+
+/**
+ * A Branch drawing itself: the stem strokes on and the leaves open as the
+ * stroke passes them. `down` draws from the bloom to the foot (a main branch
+ * hanging from its tree limb). Timeline of about one unit, for playing,
+ * scaling or scrubbing; fromTo writes the hidden start state now.
+ */
+function branchGrow(svg: SVGSVGElement, down = false) {
+  const tl = gsap.timeline({ defaults: { ease: 'none' } })
+  const stems = Array.from(svg.querySelectorAll<SVGPathElement>('.stem, .stem-shadow'))
+  const len = Math.ceil(stems[0]?.getTotalLength() ?? 0)
+  if (len)
+    tl.fromTo(stems, { strokeDasharray: len, strokeDashoffset: down ? -len : len }, { strokeDashoffset: 0, duration: 1 }, 0)
+  // DOM order is foot to top, the bloom last.
+  const buds = Array.from(svg.querySelectorAll<SVGGElement>('.leaf-grow'))
+  buds.forEach((g, i) => {
+    const bloom = g.classList.contains('bloom')
+    // Origin first, on its own: set inside the tween, smoothOrigin would
+    // shift the leaf off its node to compensate for the change.
+    gsap.set(g, { transformOrigin: bloom ? '50% 50%' : '50% 100%' })
+    const f = (i + 1) / (buds.length + 1) // how far up the stem
+    tl.fromTo(
+      g,
+      { scale: 0, rotation: bloom ? -90 : (i % 2 ? 1 : -1) * 30 },
+      { scale: 1, rotation: 0, duration: bloom ? 0.3 : 0.24, ease: 'back.out(2.2)' },
+      bloom ? (down ? 0 : 0.85) : 0.1 + 0.78 * (down ? 1 - f : f),
+    )
+  })
+  return tl
 }
 
 type Range = { start?: string | (() => string); end?: string | (() => string | number) }
@@ -188,7 +264,7 @@ export function HomeMotion() {
 
     // Shared between layers.
     const fx = { vel: 0 }
-    const pins: { story: ScrollTrigger | null; deck: ScrollTrigger | null } = { story: null, deck: null }
+    const pins: { deck: ScrollTrigger | null } = { deck: null }
     const hero = {
       chars: [] as HTMLElement[],
       rest: [] as number[],
@@ -203,9 +279,42 @@ export function HomeMotion() {
       })
     }
 
-    // Reduced motion: nothing is hidden, moved or looped. The page is the static markup.
+    // Reduced motion: nothing is hidden, moved or looped. The page is the static
+    // markup plus the whole tree, drawn once and redrawn only when the grove resizes.
     mm.add('(prefers-reduced-motion: reduce)', () => {
       html.classList.remove('home-wait')
+      // The rail is a plain scroller here; Chrome leaves a half-visible print
+      // where it is on focus, so bring it fully in (clear of the fade: the
+      // rail's scroll-padding, globals.css).
+      const rail = $('.photo-rail')
+      const onRailFocus = (event: FocusEvent) =>
+        (event.target as Element).closest('.photo-rail-item')?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+      rail?.addEventListener('focusin', onRailFocus)
+      const unrail = () => rail?.removeEventListener('focusin', onRailFocus)
+      const svg = root.querySelector<SVGSVGElement>('.home-tree')
+      const exhibits = $$('.exhibit')
+      if (!svg?.parentElement || !exhibits.length || !('ResizeObserver' in window)) return unrail
+      const tree = plantTree(svg, exhibits)
+      let raf = 0
+      let dead = false
+      const fit = () => {
+        raf = 0
+        tree.measure()
+        tree.draw(Infinity)
+      }
+      const soon = () => {
+        if (!raf && !dead) raf = requestAnimationFrame(fit)
+      }
+      const ro = new ResizeObserver(soon)
+      ro.observe(svg.parentElement)
+      fonts.then(soon)
+      return () => {
+        unrail()
+        dead = true
+        ro.disconnect()
+        cancelAnimationFrame(raf)
+        tree.remove()
+      }
     })
 
     // ---------------------------------------------------------------------
@@ -253,18 +362,27 @@ export function HomeMotion() {
       gsap.ticker.add(decay)
       undo.push(() => gsap.ticker.remove(decay))
 
-      // ---- hero: chars tossed onto the board, card pinned with tape -------
+      // ---- hero: chars tossed onto the board, prints dealt onto it, buttons stamped ----
+      // Keyboard focus in the hero before the intro has run shows the static hero
+      // (heroIntro then skips itself); during the intro it finishes it.
+      let intro: gsap.core.Timeline | null = null
+      const heroBox = $('.hero')
+      const onHeroFocus = () => {
+        unwait()
+        intro?.progress(1)
+      }
+      heroBox?.addEventListener('focusin', onHeroFocus, { once: true })
+      undo.push(() => heroBox?.removeEventListener('focusin', onHeroFocus))
       const heroIntro = () => {
         const h1 = $('.hero h1')
-        const lede = $$('.hero-copy > :not(h1)')
-        const figure = $('.hero-figure')
-        const face = $('.hero-card')
-        const shadow = $('.paper-shadow')
-        const tapes = $$('.tape')
+        const lede = $$('.hero-copy > :not(h1):not(.hero-actions)')
+        const stamps = $$('.hero-stamp')
+        const deals = $$('.cl-deal')
+        const boughs = Array.from(root.querySelectorAll<SVGSVGElement>('.collage .branch'))
         // The 2s CSS fallback already revealed the hero (a very slow bundle): do not hide it again to replay.
         if (h1 && getComputedStyle(h1).visibility === 'visible') return
         const rnd = makeRnd(11)
-        const tl = gsap.timeline({ defaults: { ease: 'power2.out' } })
+        const tl = (intro = gsap.timeline({ defaults: { ease: 'power2.out' } }))
 
         if (h1) {
           const chars = kit.mk(h1, { type: 'words,chars', wordsClass: 'hw', charsClass: 'hc' })
@@ -301,38 +419,55 @@ export function HomeMotion() {
           })
         }
 
-        if (figure && face && shadow) {
-          // Recipe 7 soft landing: offset up-left, no shadow, steps onto the hard shadow and settles.
-          const rest = restOf(figure, '--hero-rest')
-          tl.fromTo(figure, { rotation: rest + 3 }, { rotation: rest, duration: 0.35 }, 0.15)
-            .fromTo(face, { x: -3, y: -4 }, { x: 0, y: 0, duration: 0.35 }, 0.15)
-            .fromTo(shadow, { opacity: 0 }, { opacity: 1, duration: 0.35 }, 0.15)
-            // Tape goes on once the card has landed.
-            .fromTo(
-              tapes,
-              {
-                scale: 0.9,
-                opacity: 0,
-                rotation: (i: number, el: Element) => restOf(el, '--rot') + (i % 2 ? 6 : -6),
-              },
-              {
-                scale: 1,
-                opacity: 1,
-                rotation: (_i: number, el: Element) => restOf(el, '--rot'),
-                duration: 0.25,
-                stagger: 0.08,
-              },
-              0.5,
+        // The board: each print is dealt on from its own side, settles to its rest angle
+        // (the frame holds it in CSS), steps onto its hard shadow, then the tape goes on.
+        const landed: HTMLElement[] = []
+        deals.forEach((deal, i) => {
+          const face = deal.querySelector<HTMLElement>('.cl-face')
+          const shadow = deal.querySelector<HTMLElement>('.cl-shadow')
+          const tape = deal.querySelector<HTMLElement>('.cl-tape')
+          const side = i % 2 ? 1 : -1
+          const at = 0.12 + i * 0.09
+          tl.fromTo(
+            deal,
+            { x: side * 28, y: -44, rotation: side * 7, opacity: 0 },
+            { x: 0, y: 0, rotation: 0, opacity: 1, duration: 0.4 },
+            at,
+          )
+          if (face) tl.fromTo(face, { x: -3, y: -4 }, { x: 0, y: 0, duration: 0.2 }, at + 0.3)
+          if (shadow) tl.fromTo(shadow, { opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.3)
+          if (tape) {
+            const tr = restOf(tape, '--rot')
+            tl.fromTo(
+              tape,
+              { opacity: 0, scale: 0.9, rotation: tr + (i % 2 ? -6 : 6) },
+              { opacity: 1, scale: 1, rotation: tr, duration: 0.25 },
+              at + 0.45,
             )
-        }
+          }
+          landed.push(deal, ...([face, shadow, tape].filter(Boolean) as HTMLElement[]))
+        })
+        // Branches draw between the prints once most of them are down.
+        boughs.forEach((svg, k) => tl.add(branchGrow(svg).duration(0.8), 0.55 + k * 0.14))
 
-        // Eyebrow, paragraph, buttons: one short fade.
+        // Eyebrow and paragraph: one short fade.
         tl.fromTo(
           lede,
           { opacity: 0, y: 10 },
           { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, clearProps: 'opacity,transform' },
           0.35,
         )
+        // Buttons are stamped onto the board: down from above the paper, accelerating into it.
+        tl.fromTo(
+          stamps,
+          { scale: 1.3, rotation: (i: number) => (i % 2 ? 4 : -4) },
+          { scale: 1, rotation: 0, duration: 0.26, ease: 'power3.in', stagger: 0.12 },
+          0.6,
+        ).fromTo(stamps, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: 'none', stagger: 0.12 }, 0.6)
+        landed.push(...stamps)
+        tl.call(() => {
+          gsap.set(landed, { clearProps: 'opacity,transform' })
+        })
       }
       undo.push(() => {
         hero.chars = []
@@ -353,6 +488,7 @@ export function HomeMotion() {
         let push = 0
         let hover = 1
         let hoverTo = 1
+        let focused = false
         let live = false
         const measure = () => {
           // One whole copy, gaps included: the loop is seamless.
@@ -361,11 +497,35 @@ export function HomeMotion() {
         measure()
         root.classList.add('rail-js') // CSS animation off; the ticker drives the track
         const onEnter = () => (hoverTo = 0)
-        const onLeave = () => (hoverTo = 1)
+        const onLeave = () => {
+          if (!section.contains(document.activeElement)) hoverTo = 1
+        }
         section.addEventListener('mouseenter', onEnter)
         section.addEventListener('mouseleave', onLeave)
-        section.addEventListener('focusin', onEnter)
-        section.addEventListener('focusout', onLeave)
+        // While a print has keyboard focus the drift stops dead (no easing), and
+        // a print the drift has carried off screen or into the fade is brought
+        // back in (the rail is overflow: clip while this runs, so the browser
+        // cannot scroll it sideways). Originals sit in the first copy, so the
+        // first print may sit right of the track start for a moment; the loop
+        // wraps that seamlessly once the drift resumes.
+        const onFocusItem = (event: FocusEvent) => {
+          focused = true
+          hover = hoverTo = 0
+          const item = (event.target as Element).closest<HTMLElement>('.photo-rail-item')
+          if (!item || !period) return
+          const r = item.getBoundingClientRect()
+          const s = section.getBoundingClientRect()
+          const edge = s.width * 0.1 // clear of the 8% fade at each end
+          if (r.left >= s.left + edge && r.right <= s.right - edge) return
+          x = item.offsetLeft - items[0].offsetLeft - edge
+          gsap.set(track, { x: -x })
+        }
+        const onBlurItem = () => {
+          focused = false
+          onLeave()
+        }
+        section.addEventListener('focusin', onFocusItem)
+        section.addEventListener('focusout', onBlurItem)
         const st = ScrollTrigger.create({
           trigger: section,
           start: 'top bottom',
@@ -374,7 +534,7 @@ export function HomeMotion() {
         })
         ScrollTrigger.addEventListener('refresh', measure)
         const tick = (_t: number, ms: number) => {
-          if (!live || !period) return
+          if (!live || !period || focused) return
           const dt = Math.min(ms, 64) / 1000
           push += (gsap.utils.clamp(-3, 3, fx.vel / 500) - push) * Math.min(1, dt * 10)
           hover += (hoverTo - hover) * Math.min(1, dt * 6)
@@ -389,26 +549,48 @@ export function HomeMotion() {
           st.kill()
           section.removeEventListener('mouseenter', onEnter)
           section.removeEventListener('mouseleave', onLeave)
-          section.removeEventListener('focusin', onEnter)
-          section.removeEventListener('focusout', onLeave)
+          section.removeEventListener('focusin', onFocusItem)
+          section.removeEventListener('focusout', onBlurItem)
           gsap.set(track, { clearProps: 'transform' })
           root.classList.remove('rail-js')
         })
       }
 
-      // ---- showcase: each pair is presented as it crosses the screen ----
-      // The branch draws up from the soil and its leaves open bottom to top;
-      // the frame rises, straightens onto its rest tilt, holds through the
-      // middle of the screen and leans away as it leaves. Tape and the name
-      // plate land once. No text is scrubbed.
+      // ---- showcase and tree: each pair is presented as it crosses the screen ----
+      // The frame rises, straightens onto its rest tilt, holds through the
+      // middle of the screen and leans away as it leaves. The tree's front
+      // grows the trunk, the limb to the pair, then the pair's main branch
+      // down from its bloom (and the sprig up). Tape and the name plate land
+      // once; no text is scrubbed.
       const exhibitsSetup = () => {
-        $$('.exhibit').forEach((ex, n) => {
+        const exhibits = $$('.exhibit')
+        const grows: gsap.core.Timeline[] = []
+        exhibits.forEach((ex, n) => {
           const stage = ex.querySelector<HTMLElement>('.exhibit-stage')
           const lift = ex.querySelector<HTMLElement>('.exhibit-lift')
           const tape = ex.querySelector<HTMLElement>('.ex-tape')
-          const plate = Array.from(ex.querySelectorAll<HTMLElement>('.exhibit-plate > *'))
+          const plate = ex.querySelector<HTMLElement>('.exhibit-plate')
+          const main = ex.querySelector<SVGSVGElement>('.branch-main')
+          const sprig = ex.querySelector<SVGSVGElement>('.branch-sprig')
+          const grow = gsap.timeline({ paused: true })
+          if (main) grow.add(branchGrow(main, true), 0)
+          if (sprig) grow.add(branchGrow(sprig), 0.15)
+          grows[n] = grow
           if (!stage || !lift) return
-          const dir = n % 2 ? 1 : -1 // leans towards its main branch
+          const dir = n % 2 ? 1 : -1
+
+          // Tape and plate parts hidden until their trigger. Keyboard focus on the
+          // exhibit puts them straight at rest; the lift's scrub never hides it.
+          const held: HTMLElement[] = []
+          const sts: ScrollTrigger[] = []
+          const settle = () => {
+            sts.forEach((st) => st.kill())
+            if (!held.length) return
+            gsap.killTweensOf(held)
+            gsap.set(held, { clearProps: 'all' })
+          }
+          ex.addEventListener('focusin', settle, { once: true })
+          undo.push(() => ex.removeEventListener('focusin', settle))
 
           gsap.fromTo(
             lift,
@@ -430,70 +612,124 @@ export function HomeMotion() {
             },
           )
 
-          const grow = gsap.timeline({
-            defaults: { ease: 'none' },
-            scrollTrigger: {
+          if (tape && belowFold(ex)) {
+            const tr = restOf(tape, '--rot')
+            gsap.set(tape, { opacity: 0, scale: 0.9, rotation: tr + 6 })
+            held.push(tape)
+            sts.push(ScrollTrigger.create({
               trigger: stage,
-              start: 'top 92%',
-              end: 'center 52%',
+              start: 'top 62%',
+              once: true,
+              refreshPriority: -1,
+              onEnter: () => {
+                gsap.to(tape, { opacity: 1, scale: 1, rotation: tr, duration: 0.3, ease: 'power2.out', clearProps: 'opacity,transform' })
+              },
+            }))
+          }
+
+          // The plate lands as it comes up the screen: the name rises, the price tag
+          // swings in on its string and settles, the size stamps press on one by one.
+          if (!plate || !belowFold(plate)) return
+          const h3 = plate.querySelector<HTMLElement>('h3')
+          const tag = plate.querySelector<HTMLElement>('.price-tag')
+          const stamps = Array.from(plate.querySelectorAll<HTMLElement>('.size-stamp'))
+          if (h3) gsap.set(h3, { opacity: 0, y: 14 })
+          // The tag hangs from the hole at its left end: origin first, then the start angle.
+          if (tag) gsap.set(tag, { transformOrigin: '0% 50%' })
+          if (tag) gsap.set(tag, { opacity: 0, rotation: 24 })
+          if (stamps.length) gsap.set(stamps, { opacity: 0, scale: 1.4 })
+          held.push(...([h3, tag].filter(Boolean) as HTMLElement[]), ...stamps)
+          sts.push(ScrollTrigger.create({
+            trigger: plate,
+            start: 'top 92%',
+            once: true,
+            refreshPriority: -1,
+            onEnter: () => {
+              if (h3) gsap.to(h3, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', clearProps: 'opacity,transform' })
+              if (tag)
+                gsap
+                  .timeline({ delay: 0.15, onComplete: () => void gsap.set(tag, { clearProps: 'all' }) })
+                  .to(tag, { opacity: 1, duration: 0.15, ease: 'none' }, 0)
+                  .to(
+                    tag,
+                    {
+                      keyframes: [
+                        { rotation: -10, duration: 0.3, ease: 'power2.out' },
+                        { rotation: 3, duration: 0.26, ease: 'sine.inOut' },
+                        { rotation: -1.5, duration: 0.3, ease: 'sine.out' }, // the CSS rest angle
+                      ],
+                    },
+                    0,
+                  )
+              if (stamps.length)
+                gsap.to(stamps, {
+                  opacity: 1,
+                  scale: 1,
+                  duration: 0.2,
+                  ease: 'power3.in',
+                  stagger: 0.04,
+                  delay: 0.3,
+                  clearProps: 'opacity,transform',
+                })
+            },
+          }))
+        })
+
+        // The tree: geometry on refresh only, drawing from one scrubbed front.
+        const svg = root.querySelector<SVGSVGElement>('.home-tree')
+        const grove = svg?.parentElement
+        if (svg && grove && exhibits.length) {
+          const tree = plantTree(svg, exhibits)
+          let vh = innerHeight
+          const remeasure = () => {
+            tree.measure()
+            vh = innerHeight
+          }
+          remeasure()
+          const proxy = { v: 0 }
+          const frame = () => {
+            const f = proxy.v * tree.height()
+            tree.draw(f)
+            grows.forEach((g, i) => {
+              const p = gsap.utils.clamp(0, 1, (f - tree.ready(i)) / (BRANCH_RUN * vh))
+              if (g.progress() !== p) g.progress(p)
+            })
+          }
+          ScrollTrigger.addEventListener('refreshInit', remeasure)
+          ScrollTrigger.addEventListener('refresh', frame)
+          gsap.to(proxy, {
+            v: 1,
+            ease: 'none',
+            onUpdate: frame,
+            scrollTrigger: {
+              trigger: grove,
+              start: `top ${FRONT * 100}%`,
+              end: `bottom ${FRONT * 100}%`,
               scrub: 0.6,
               refreshPriority: -1,
             },
           })
-          ex.querySelectorAll<SVGSVGElement>('.branch').forEach((svg, k) => {
-            const stems = Array.from(svg.querySelectorAll<SVGPathElement>('.stem, .stem-shadow'))
-            const len = Math.ceil(stems[0]?.getTotalLength() ?? 0)
-            if (len) grow.fromTo(stems, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1 }, k * 0.15)
-            // DOM order is bottom to top, so leaves open as the stem passes them.
-            const buds = Array.from(svg.querySelectorAll<SVGGElement>('.leaf-grow'))
-            buds.forEach((g, i) => {
-              const bloom = g.classList.contains('bloom')
-              // Origin first, on its own: set inside the tween, smoothOrigin would
-              // shift the leaf off its node to compensate for the change.
-              gsap.set(g, { transformOrigin: bloom ? '50% 50%' : '50% 100%' })
-              grow.fromTo(
-                g,
-                { scale: 0, rotation: bloom ? -90 : (i % 2 ? 1 : -1) * 30 },
-                {
-                  scale: 1,
-                  rotation: 0,
-                  duration: bloom ? 0.3 : 0.24,
-                  ease: 'back.out(2.2)',
-                },
-                k * 0.15 + 0.12 + (0.78 * (i + 1)) / (buds.length + 1),
-              )
-            })
+          frame()
+          // Leaves sway only while their pair is on screen.
+          exhibits.forEach((ex, i) =>
+            ScrollTrigger.create({
+              trigger: ex,
+              start: 'top bottom',
+              end: 'bottom top',
+              toggleClass: { targets: [ex, tree.nodes[i]], className: 'live' },
+              refreshPriority: -1,
+            }),
+          )
+          undo.push(() => {
+            ScrollTrigger.removeEventListener('refreshInit', remeasure)
+            ScrollTrigger.removeEventListener('refresh', frame)
+            tree.remove()
           })
-
-          // Leaves sway only while the pair is on screen.
-          ScrollTrigger.create({
-            trigger: ex,
-            start: 'top bottom',
-            end: 'bottom top',
-            toggleClass: 'live',
-            refreshPriority: -1,
-          })
-
-          const once = [tape, ...plate].filter(Boolean) as HTMLElement[]
-          if (!once.length || !belowFold(ex)) return
-          const tr = tape ? restOf(tape, '--rot') : 0
-          if (tape) gsap.set(tape, { opacity: 0, scale: 0.9, rotation: tr + 6 })
-          if (plate.length) gsap.set(plate, { opacity: 0, y: 14 })
-          ScrollTrigger.create({
-            trigger: stage,
-            start: 'top 62%',
-            once: true,
-            refreshPriority: -1,
-            onEnter: () => {
-              if (tape)
-                gsap.to(tape, { opacity: 1, scale: 1, rotation: tr, duration: 0.3, ease: 'power2.out', clearProps: 'opacity,transform' })
-              if (plate.length)
-                gsap.to(plate, { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: 'power2.out', delay: 0.1, clearProps: 'opacity,transform' })
-            },
-          })
-        })
+        }
         undo.push(() => {
-          gsap.set($$('.exhibit-lift, .ex-tape, .exhibit-plate > *, .branch .leaf-grow'), { clearProps: 'all' })
+          gsap.set($$('.exhibit-lift, .ex-tape, .exhibit-plate h3, .price-tag, .size-stamp, .branch .leaf-grow'), {
+            clearProps: 'all',
+          })
           gsap.set($$('.branch .stem, .branch .stem-shadow'), { clearProps: 'strokeDasharray,strokeDashoffset' })
           $$('.exhibit').forEach((ex) => ex.classList.remove('live'))
         })
@@ -564,7 +800,7 @@ export function HomeMotion() {
     })
 
     // ---------------------------------------------------------------------
-    // Fine pointer: Lenis smooth wheel, hero card tilt, shape drift.
+    // Fine pointer: Lenis smooth wheel, hero board drift, shape drift.
     // Touch and coarse pointers keep native scrolling.
     // ---------------------------------------------------------------------
     mm.add(FINE, () => {
@@ -574,18 +810,19 @@ export function HomeMotion() {
       gsap.ticker.add(raf)
       gsap.ticker.lagSmoothing(0)
 
-      const tilt = $('.hero-tilt')
       const heroEl = $('.hero')
-      const figure = $('.hero-figure')
       const drifts = $$('.shape-drift')
-      if (tilt) gsap.set(tilt, { transformPerspective: 900 })
-      const rx = tilt ? gsap.quickTo(tilt, 'rotationX', { duration: 0.7, ease: 'power3.out' }) : null
-      const ry = tilt ? gsap.quickTo(tilt, 'rotationY', { duration: 0.7, ease: 'power3.out' }) : null
       const moves = drifts.map((el, i) => ({
         x: gsap.quickTo(el, 'x', { duration: 0.8, ease: 'power3.out' }),
         y: gsap.quickTo(el, 'y', { duration: 0.8, ease: 'power3.out' }),
         k: 0.5 + (i % 4) * 0.17,
         dir: i % 2 ? -1 : 1,
+      }))
+      // Each print on the hero board drifts with the cursor at its own depth, while the cursor is over the hero.
+      const prints = $$('.cl-drift').map((el, i) => ({
+        x: gsap.quickTo(el, 'x', { duration: 0.9, ease: 'power3.out' }),
+        y: gsap.quickTo(el, 'y', { duration: 0.9, ease: 'power3.out' }),
+        k: DEPTH[i % DEPTH.length],
       }))
       let px = 0
       let py = 0
@@ -598,18 +835,13 @@ export function HomeMotion() {
           m.x(nx * 12 * m.k * m.dir)
           m.y(ny * 12 * m.k)
         })
-        if (rx && ry && heroEl && figure) {
+        if (heroEl && prints.length) {
           const hb = heroEl.getBoundingClientRect()
-          if (py >= hb.top && py <= hb.bottom) {
-            const fb = figure.getBoundingClientRect()
-            const dx = gsap.utils.clamp(-1, 1, (px - (fb.left + fb.width / 2)) / (innerWidth / 2))
-            const dy = gsap.utils.clamp(-1, 1, (py - (fb.top + fb.height / 2)) / (innerHeight / 2))
-            ry(dx * 4)
-            rx(-dy * 4)
-          } else {
-            rx(0)
-            ry(0)
-          }
+          const over = py >= hb.top && py <= hb.bottom
+          prints.forEach((p) => {
+            p.x(over ? nx * 14 * p.k : 0)
+            p.y(over ? ny * 10 * p.k : 0)
+          })
         }
       }
       const onMove = (e: PointerEvent) => {
@@ -619,12 +851,10 @@ export function HomeMotion() {
         if (!frame) frame = requestAnimationFrame(apply)
       }
       const reset = () => {
-        moves.forEach((m) => {
+        ;[...moves, ...prints].forEach((m) => {
           m.x(0)
           m.y(0)
         })
-        rx?.(0)
-        ry?.(0)
       }
       addEventListener('pointermove', onMove, { passive: true })
       document.addEventListener('mouseleave', reset)
@@ -642,9 +872,9 @@ export function HomeMotion() {
     })
 
     // ---------------------------------------------------------------------
-    // Desktop: the story band is the page's one loud moment (pinned, chars
-    // assemble on scrub, shapes fly in); the hero leaves char by char; section
-    // heads assemble on scrub; how it works is a pinned deck.
+    // Desktop: the hero leaves char by char and the board lifts away; section
+    // heads assemble on scrub; the story strip's line assembles once; how it
+    // works is a pinned deck (the page's one pin, after the products).
     // ---------------------------------------------------------------------
     mm.add(DECK, (ctx) => {
       const undo: Array<() => void> = []
@@ -657,13 +887,13 @@ export function HomeMotion() {
       root.classList.add('deck-on')
       undo.push(() => root.classList.remove('deck-on'))
 
-      // ---- hero exit: chars peel up and scatter, the card tilts further and lifts ----
+      // ---- hero exit: chars peel up and scatter, the board tilts and lifts ----
       const heroExit = () => {
         const chars = hero.chars
         const rest = hero.rest
         const h1 = $('.hero h1')
         const heroEl = $('.hero')
-        const lift = $('.hero-lift')
+        const board = $('.collage')
         if (!chars.length || !h1 || !heroEl) return
         const rnd = makeRnd(23)
         const seed = chars.map(() => [rnd(), rnd(-1, 1)])
@@ -698,13 +928,13 @@ export function HomeMotion() {
             { opacity: 0, duration: 0.4, stagger: (i: number) => d[i] },
             0.9,
           )
-        if (lift)
+        if (board)
           gsap.fromTo(
-            lift,
+            board,
             { y: 0, rotation: 0 },
             {
               y: -90,
-              rotation: -3,
+              rotation: -1.5,
               ease: 'none',
               scrollTrigger: {
                 trigger: heroEl,
@@ -729,95 +959,23 @@ export function HomeMotion() {
 
       const hdrH = () => hh()
 
-      // ---- story band: pinned once, chars assemble on scrub, shapes fly in from the gutters ----
-      const storyPinned = () => {
-        const band = $('.story-band')
-        const h2 = $('.story-band h2')
-        if (!band || !h2) return
-        const rnd = makeRnd(37)
-        const pin = ScrollTrigger.create({
-          trigger: band,
-          start: () => `top ${hdrH()}px`,
-          end: () => `+=${Math.round(innerHeight)}`,
-          pin: true,
-          invalidateOnRefresh: true,
-          refreshPriority: 10,
-        })
-        pins.story = pin
-        undo.push(() => {
-          pins.story = null
-        })
-        const chars = kit.mk(h2, { type: 'words,chars', wordsClass: 'sw', charsClass: 'sc' })
-          .chars as HTMLElement[]
-        const rest = chars.map(() => +rnd(-0.8, 0.8).toFixed(2))
-        const d = delaysFor(chars.length, 0.02, rnd)
-        const off = chars.map(() => [
-          (rnd() < 0.5 ? -1 : 1) * rnd(20, 90),
-          (rnd() < 0.5 ? -1 : 1) * rnd(60, 150),
-          (rnd() < 0.5 ? -1 : 1) * rnd(12, 28),
-        ])
-        const tl = gsap.timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: {
-            trigger: band,
-            start: 'top 78%',
-            // done a quarter of a screen before the pin lets go, so the finished line holds
-            end: () => pin.end - Math.round(innerHeight * 0.25),
-            scrub: 0.6,
-            refreshPriority: 8,
-          },
-        })
-        tl.fromTo(
-          chars,
-          {
-            x: (i: number) => off[i][0],
-            y: (i: number) => off[i][1],
-            rotation: (i: number) => off[i][2],
-            scale: 0.85,
-          },
-          {
-            x: 0,
-            y: 0,
-            rotation: (i: number) => rest[i],
-            scale: 1,
-            ease: 'back.out(1.5)',
-            duration: 1,
-            stagger: (i: number) => d[i],
-          },
-          0,
-        ).fromTo(
-          chars,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.15, ease: 'none', stagger: (i: number) => d[i] },
-          0,
-        )
-        // Shapes fly in from their own side of the band and settle (their own node, .shape-fly).
-        const flies = $$('.story-band .shape-fly')
-        const bandMid = () => band.getBoundingClientRect().left + band.offsetWidth / 2
-        flies.forEach((el, i) => {
-          const sb = el.getBoundingClientRect()
-          const dir = sb.left + sb.width / 2 < bandMid() ? -1 : 1
-          tl.fromTo(
-            el,
-            {
-              x: dir * Math.min(innerWidth * 0.4, 520),
-              y: (i % 2 ? 1 : -1) * (80 + i * 30),
-              rotation: dir * (40 + i * 10),
-              opacity: 0,
-            },
-            { x: 0, y: 0, rotation: 0, opacity: 1, duration: 1, ease: 'power3.out' },
-            0.1 + i * 0.12,
-          )
-        })
-      }
-
       // ---- section heads: big display words, chars drop onto the board as the section enters ----
       const headsScrub = () => {
         const rnd = makeRnd(41)
         $$('.section-head h2').forEach((h2) => {
+          const onScreen = h2.getBoundingClientRect().top < innerHeight
           const chars = kit.mk(h2, { type: 'chars', charsClass: 'dc' }).chars as HTMLElement[]
           const rest = chars.map(() => +rnd(-0.8, 0.8).toFixed(2))
-          gsap
+          // Already on screen at load (the products now start inside the first
+          // screen and a half): a scrub would rest half-assembled before any
+          // scroll, so it drops in once on the first scroll instead.
+          if (onScreen) {
+            const tl = dropHead(chars, rest, parseFloat(getComputedStyle(h2).fontSize), { paused: true })
+            onFirstScroll(() => tl.play(), undo)
+            undo.push(finishOnFocus(h2.parentElement, tl)) // "View all" sits beside it
+            return
+          }
+          const tl = gsap
             .timeline({
               defaults: { ease: 'none' },
               scrollTrigger: {
@@ -840,6 +998,7 @@ export function HomeMotion() {
               0,
             )
             .fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.25, stagger: 0.1 }, 0)
+          undo.push(finishOnFocus(h2.parentElement, tl))
         })
       }
 
@@ -934,7 +1093,7 @@ export function HomeMotion() {
         ctx,
         () => !dead,
         () => {
-          storyPinned()
+          storyOnce(kit, makeRnd(37))
           headsScrub()
           deck()
           ScrollTrigger.refresh()
@@ -945,56 +1104,58 @@ export function HomeMotion() {
     })
 
     // ---------------------------------------------------------------------
+    // Once-only text entrances: the story strip's line (every layout) and the
+    // section heads (phones and short screens; desktop scrubs those).
+    // ---------------------------------------------------------------------
+    type Kit = ReturnType<typeof makeKit>
+    type Rnd = (a?: number, b?: number) => number
+    const storyOnce = (kit: Kit, rnd: Rnd) => {
+      const h2 = $('.story-band h2')
+      if (!h2 || !belowFold(h2)) return
+      const chars = kit.mk(h2, { type: 'words,chars', wordsClass: 'sw', charsClass: 'sc' })
+        .chars as HTMLElement[]
+      const rest = chars.map(() => +rnd(-0.8, 0.8).toFixed(2))
+      const d = delaysFor(chars.length, 0.02, rnd)
+      gsap
+        .timeline({ scrollTrigger: { trigger: h2, start: 'top bottom', once: true, refreshPriority: -1 } })
+        .fromTo(
+          chars,
+          // a short drop: the gap above the headline is 24px, so chars never land on the eyebrow
+          { y: -12, rotation: (i: number) => (i % 2 ? 1 : -1) * (10 + rnd() * 6), scale: 0.7 },
+          {
+            y: 0,
+            rotation: (i: number) => rest[i],
+            scale: 1,
+            duration: 0.6,
+            ease: 'back.out(1.6)',
+            stagger: (i: number) => d[i],
+          },
+          0,
+        )
+        .fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: 'none', stagger: (i: number) => d[i] }, 0)
+    }
+    const headsOnce = (kit: Kit, rnd: Rnd, undo: Array<() => void>) => {
+      $$('.section-head h2').forEach((h2) => {
+        const below = belowFold(h2)
+        const chars = kit.mk(h2, { type: 'chars', charsClass: 'dc' }).chars as HTMLElement[]
+        const rest = chars.map(() => +rnd(-0.8, 0.8).toFixed(2))
+        const fs = parseFloat(getComputedStyle(h2).fontSize)
+        if (below) {
+          const tl = dropHead(chars, rest, fs, { scrollTrigger: { trigger: h2, start: 'top bottom', once: true } })
+          undo.push(finishOnFocus(h2.parentElement, tl))
+          return
+        }
+        // On screen at load: hidden now, dropped in on the first scroll.
+        const tl = dropHead(chars, rest, fs, { paused: true })
+        onFirstScroll(() => tl.play(), undo)
+        undo.push(finishOnFocus(h2.parentElement, tl))
+      })
+    }
+
+    // ---------------------------------------------------------------------
     // Phones (portrait): no pins, no scrubbed text. Chars assemble once on
     // entry; how it works is a CSS sticky stack sized by fitCards.
     // ---------------------------------------------------------------------
-    const entryChars = (kit: ReturnType<typeof makeKit>, rnd: (a?: number, b?: number) => number) => {
-      const story = () => {
-        const h2 = $('.story-band h2')
-        if (!h2 || !belowFold(h2)) return
-        const chars = kit.mk(h2, { type: 'words,chars', wordsClass: 'sw', charsClass: 'sc' })
-          .chars as HTMLElement[]
-        const rest = chars.map(() => +rnd(-0.8, 0.8).toFixed(2))
-        const d = delaysFor(chars.length, 0.02, rnd)
-        gsap
-          .timeline({ scrollTrigger: { trigger: h2, start: 'top bottom', once: true } })
-          .fromTo(
-            chars,
-            // a short drop: the gap above the headline is 24px, so chars never land on the eyebrow
-            { y: -12, rotation: (i: number) => (i % 2 ? 1 : -1) * (10 + rnd() * 6), scale: 0.7 },
-            {
-              y: 0,
-              rotation: (i: number) => rest[i],
-              scale: 1,
-              duration: 0.6,
-              ease: 'back.out(1.6)',
-              stagger: (i: number) => d[i],
-            },
-            0,
-          )
-          .fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: 'none', stagger: (i: number) => d[i] }, 0)
-      }
-      const heads = () => {
-        $$('.section-head h2').forEach((h2) => {
-          if (!belowFold(h2)) return
-          const chars = kit.mk(h2, { type: 'chars', charsClass: 'dc' }).chars as HTMLElement[]
-          const rest = chars.map(() => +rnd(-0.8, 0.8).toFixed(2))
-          const fs = parseFloat(getComputedStyle(h2).fontSize)
-          gsap
-            .timeline({ scrollTrigger: { trigger: h2, start: 'top bottom', once: true } })
-            .fromTo(
-              chars,
-              { y: -fs * 0.6, rotation: (i: number) => (i % 2 ? 1 : -1) * (8 + ((i * 3) % 4)) },
-              { y: 0, rotation: (i: number) => rest[i], duration: 0.6, ease: 'back.out(1.4)', stagger: 0.05 },
-              0,
-            )
-            .fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.2, stagger: 0.05 }, 0)
-        })
-      }
-      story()
-      heads()
-    }
-
     mm.add(PHONE, (ctx) => {
       const undo: Array<() => void> = []
       let dead = false
@@ -1011,7 +1172,9 @@ export function HomeMotion() {
         ctx,
         () => !dead,
         () => {
-          entryChars(kit, makeRnd(53))
+          const rnd = makeRnd(53)
+          storyOnce(kit, rnd)
+          headsOnce(kit, rnd, undo)
           if (scene && cards.length) {
             const fit = () => {
               fitCards(scene, cards)
@@ -1043,7 +1206,9 @@ export function HomeMotion() {
         ctx,
         () => !dead,
         () => {
-          entryChars(kit, makeRnd(59))
+          const rnd = makeRnd(59)
+          storyOnce(kit, rnd)
+          headsOnce(kit, rnd, undo)
           landCards($$('.how-card'))
           ScrollTrigger.refresh()
         },
@@ -1053,7 +1218,7 @@ export function HomeMotion() {
 
     // ---------------------------------------------------------------------
     // Shapes: parallax and sway per host; wide screens have gutters and bob,
-    // compact ones keep a short reach. Pinned hosts ride their pin's range.
+    // compact ones keep a short reach. The pinned deck's shapes ride its pin's range.
     // ---------------------------------------------------------------------
     const hostsOf = () => {
       const hosts = new Map<HTMLElement, HTMLElement[]>()
@@ -1064,8 +1229,6 @@ export function HomeMotion() {
       return hosts
     }
     const rangeFor = (host: HTMLElement): Range => {
-      if (host.classList.contains('story-band'))
-        return { end: () => pins.story?.end ?? 'bottom top' }
       if (host.classList.contains('how-band'))
         return { end: () => pins.deck?.end ?? 'bottom top' }
       return {}

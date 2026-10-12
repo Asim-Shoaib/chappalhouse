@@ -1,12 +1,13 @@
 import Link from 'next/link'
-import Image from 'next/image'
-import { getProducts, imageUrl } from '@/lib/catalog'
+import { getProducts, categoryLabel, type Product } from '@/lib/catalog'
 import { Showcase } from '@/components/Showcase'
 import { PhotoRail } from '@/components/PhotoRail'
 import { HowItWorks } from '@/components/HowItWorks'
 import { HomeMotion } from '@/components/HomeMotion'
+import { HeroCollage } from '@/components/HeroCollage'
 import { PaperShapes } from '@/components/PaperShapes'
 import { TornEdge } from '@/components/TornEdge'
+import '@/styles/home.css'
 
 // Runs while the parser reaches it, before the hero is painted, so the hero
 // text can start hidden without a visible-then-hidden flash. Reduced motion
@@ -17,11 +18,47 @@ import { TornEdge } from '@/components/TornEdge'
 const HOME_WAIT =
   "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('home-wait')}catch(e){}"
 
+// The leaf that peeks out from behind a hero button on hover (styles/home.css).
+const BTN_LEAF = (
+  <i className="btn-leaf" aria-hidden="true">
+    <svg viewBox="-17 -63 34 66" focusable="false">
+      <path className="cut-shadow" d="M0 0C-14 -20 -12 -46 0 -60C12 -46 14 -20 0 0Z" transform="translate(2 2)" />
+      <path className="cut-leaf" d="M0 0C-14 -20 -12 -46 0 -60C12 -46 14 -20 0 0Z" />
+      <path className="cut-vein" d="M0 -4V-44" />
+    </svg>
+  </i>
+)
+
+/**
+ * Seven covers for the hero board: the khussa that used to be the hero photo
+ * first (same image and alt text), then chappals and khussa alternating, the
+ * best photographed (most images) of each first.
+ */
+function boardItems(khussa: Product[], chappals: Product[]) {
+  const lead = khussa.find((p) => p.images.length > 0)
+  const best = (list: Product[]) =>
+    list.filter((p) => p.images.length > 0 && p !== lead).sort((a, b) => b.images.length - a.images.length)
+  const k = best(khussa)
+  const c = best(chappals)
+  const rest = Array.from({ length: Math.max(k.length, c.length) }, (_, i) => [c[i], k[i]]).flat()
+  return [lead, ...rest]
+    .filter((p): p is Product => Boolean(p))
+    .slice(0, 7)
+    .map((product, i) => ({
+      product,
+      image: product.images[0],
+      alt:
+        i === 0
+          ? 'Hand-embroidered maroon khussa'
+          : `${product.name}, ${categoryLabel(product.category).toLowerCase()} for women`,
+    }))
+}
+
 export default async function HomePage() {
   const products = await getProducts()
   const khussa = products.filter((p) => p.category === 'khussa')
   const chappals = products.filter((p) => p.category === 'chappal')
-  const heroImage = khussa.find((p) => p.images.length > 0)?.images[0]
+  const board = boardItems(khussa, chappals)
 
   return (
     <div className="home">
@@ -41,41 +78,63 @@ export default async function HomePage() {
               price the workshop charges. No showroom markup.
             </p>
             <div className="hero-actions">
-              <Link href="/khussa" className="button">
-                Shop khussa
-              </Link>
-              <Link href="/chappals" className="button button-quiet">
-                Shop chappals
-              </Link>
+              <span className="hero-stamp">
+                <Link href="/khussa" className="button">
+                  Shop khussa
+                  {BTN_LEAF}
+                </Link>
+              </span>
+              <span className="hero-stamp">
+                <Link href="/chappals" className="button button-quiet">
+                  Shop chappals
+                  {BTN_LEAF}
+                </Link>
+              </span>
             </div>
           </div>
 
-          {heroImage && (
-            <div className="hero-lift">
-              <div className="hero-tilt">
-                <div className="hero-figure">
-                  <i className="paper-shadow" aria-hidden="true" />
-                  <div className="hero-card">
-                    <Image
-                      src={imageUrl(heroImage)}
-                      alt="Hand-embroidered maroon khussa"
-                      width={1400}
-                      height={1750}
-                      priority
-                    />
-                  </div>
-                  <i className="tape tape-a" aria-hidden="true" />
-                  <i className="tape tape-b" aria-hidden="true" />
-                </div>
-              </div>
-            </div>
-          )}
+          {board.length > 0 && <HeroCollage items={board} />}
         </div>
       </section>
 
+      {/* The tree grows down through both product sections (components/homeTree.ts). */}
+      <div className="grove">
+        <svg className="home-tree" aria-hidden="true" focusable="false" />
+
+        {khussa.length > 0 && (
+          <section className="section showcase">
+            <div className="shell">
+              <div className="section-head">
+                <h2>Khussa</h2>
+                <Link href="/khussa" className="muted">
+                  View all
+                </Link>
+              </div>
+              <Showcase products={khussa} />
+            </div>
+          </section>
+        )}
+
+        <PhotoRail products={products} />
+
+        {chappals.length > 0 && (
+          <section className="section showcase">
+            <div className="shell">
+              <div className="section-head">
+                <h2>Chappals</h2>
+                <Link href="/chappals" className="muted">
+                  View all
+                </Link>
+              </div>
+              <Showcase products={chappals} />
+            </div>
+          </section>
+        )}
+      </div>
+
       <TornEdge tone="dark" />
 
-      <section className="story-band">
+      <section className="story-band story-strip">
         <PaperShapes scene="story" />
         <div className="shell story-grid">
           <p className="eyebrow">From Lahore, for your everyday</p>
@@ -85,38 +144,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      <TornEdge tone="paper" />
-
-      {khussa.length > 0 && (
-        <section className="section showcase">
-          <div className="shell">
-            <div className="section-head">
-              <h2>Khussa</h2>
-              <Link href="/khussa" className="muted">
-                View all
-              </Link>
-            </div>
-            <Showcase products={khussa} />
-          </div>
-        </section>
-      )}
-
-      <PhotoRail products={products} />
-
-      {chappals.length > 0 && (
-        <section className="section showcase">
-          <div className="shell">
-            <div className="section-head">
-              <h2>Chappals</h2>
-              <Link href="/chappals" className="muted">
-                View all
-              </Link>
-            </div>
-            <Showcase products={chappals} />
-          </div>
-        </section>
-      )}
 
       {products.length > 0 && (
         <>

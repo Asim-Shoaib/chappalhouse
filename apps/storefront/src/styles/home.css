@@ -1,0 +1,381 @@
+/* ==========================================================================
+   Homepage, second pass: the hero board, the hero buttons, the story strip,
+   the grove (the tree through the product sections) and the exhibit plates.
+   Imported by app/page.tsx. Driven by components/HomeMotion.tsx and
+   components/homeTree.ts; the page is complete without JS and under reduced
+   motion (the tree then is either absent or drawn whole).
+
+   Where a rule here changes an existing rule in globals.css, the comment says
+   which, and the selector is more specific than the original, so the result
+   does not depend on stylesheet order.
+   ========================================================================== */
+
+/* --- hero ------------------------------------------------------------------- */
+
+/* Overrides .hero-inner (globals: space-2xl / space-3xl padding, 1fr 0.85fr
+   columns, phone gaps): a shorter hero, so the first khussa frame starts inside
+   1.35 screens. */
+.home .hero .hero-inner {
+  gap: 28px;
+  padding-block: clamp(20px, 4vw, 56px) clamp(28px, 4vw, 56px);
+}
+
+@media (min-width: 880px) {
+  .home .hero .hero-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: var(--space-xl);
+  }
+}
+
+/* Each button sits in its own wrapper, which the intro stamps onto the board
+   (transform, opacity), so the shared hover and press on .button keep theirs. */
+.home .hero-stamp {
+  display: inline-block;
+}
+
+@media (max-width: 720px) {
+  .home .hero-stamp {
+    display: block;
+  }
+}
+
+/* A cut-paper leaf tucked behind the button's face (below both pseudo
+   elements inside the isolated button). Hover: it peeks out over the top edge.
+   Press: it snaps back in as the face stamps down. Transform only; the button
+   never changes size (the leaf is absolutely positioned). */
+.home .btn-leaf {
+  position: absolute;
+  top: -16px;
+  right: 14px;
+  z-index: -3;
+  display: block;
+  width: 18px;
+  height: 34px;
+  transform: translateY(16px) rotate(-12deg) scale(0.7);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+.home .btn-leaf svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.home .btn-leaf .cut-vein {
+  stroke-width: 2;
+  opacity: 0.55;
+}
+
+.home .button-quiet .btn-leaf .cut-leaf {
+  fill: var(--tan);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .home .button:hover .btn-leaf {
+    transform: translate(4px, -6px) rotate(18deg) scale(1);
+  }
+
+  .home .hero-stamp:nth-child(2) .button:hover .btn-leaf {
+    transform: translate(-2px, -5px) rotate(-16deg) scale(1);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .home .btn-leaf {
+    transition: transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+
+.home .hero-actions .hero-stamp .button:active .btn-leaf {
+  transform: translateY(16px) rotate(-12deg) scale(0.7);
+  transition-duration: 90ms;
+}
+
+/* The board: prints pinned up at their own angles, overlapping. Positions are
+   percentages of the board, which keeps one shape (1 : 1.08) at every width. */
+.home .collage {
+  position: relative;
+  justify-self: center;
+  width: min(100%, 560px);
+  aspect-ratio: 1 / 1.08;
+}
+
+.home .cl-item {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  z-index: var(--z);
+  display: block;
+  width: var(--w);
+  color: inherit;
+}
+
+/* Picked up, then put back: the print comes to the front the moment it is
+   hovered, but on leave it stays in front until it has settled back down
+   (z-index switches after the 320ms lift reverses), so it never drops behind
+   its neighbour mid-flight. */
+.home .cl-item {
+  transition: z-index 0s linear 320ms;
+}
+
+.home .cl-item:hover,
+.home .cl-item:focus-visible {
+  z-index: 9;
+  transition-delay: 0s;
+}
+
+.home .cl-drift,
+.home .cl-deal {
+  display: block;
+}
+
+.home .cl-frame {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  transform: rotate(var(--r));
+}
+
+.home .cl-shadow {
+  position: absolute;
+  inset: 4px -3px -4px 3px;
+  z-index: -1;
+  border-radius: var(--radius);
+  background: var(--hard-shadow);
+}
+
+.home .cl-face {
+  display: block;
+  padding: clamp(4px, 1.1vw, 8px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+/* Whole photo, never cropped: the thumbs are 3:4 and sit on the photo mat. */
+.home .cl-face img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  background: var(--photo-mat);
+}
+
+.home .cl-tape {
+  position: absolute;
+  top: -8px;
+  left: 32%;
+  z-index: 2;
+  display: block;
+  width: 36%;
+  height: clamp(12px, 1.8vw, 20px);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper-raised) 78%, transparent);
+  transform: rotate(var(--rot, -4deg));
+  pointer-events: none;
+}
+
+/* Hover lifts the print off the board: it straightens a little, grows, and
+   its hard shadow drops further away, so coming to the front reads as being
+   picked up rather than a stacking jump. */
+@media (hover: hover) and (pointer: fine) {
+  .home .cl-frame,
+  .home .cl-shadow {
+    transition: transform 320ms var(--ease-out-soft);
+  }
+
+  .home .cl-item:hover .cl-frame {
+    transform: rotate(calc(var(--r) * 0.35)) translate(-3px, -8px) scale(1.06);
+  }
+
+  .home .cl-item:hover .cl-shadow {
+    transform: translate(4px, 7px);
+  }
+}
+
+.home .cl-item:focus-visible {
+  outline: none;
+}
+
+.home .cl-item:focus-visible .cl-face {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Slots: x, y, width (of the board), rest angle, stacking, tape angle. The
+   bottom of the lowest print is at 97.6% of the board. */
+.home .cl-1 { --x: 31%; --y: 17%; --w: 38%; --r: -2deg; --z: 5; --rot: 3deg; }
+.home .cl-2 { --x: 1%; --y: 3%; --w: 31%; --r: -5deg; --z: 2; --rot: -5deg; }
+.home .cl-3 { --x: 67%; --y: 0%; --w: 31%; --r: 4deg; --z: 2; --rot: 4deg; }
+.home .cl-4 { --x: 0%; --y: 47%; --w: 30%; --r: 3deg; --z: 3; --rot: -3deg; }
+.home .cl-5 { --x: 70%; --y: 42%; --w: 30%; --r: -4deg; --z: 3; --rot: 5deg; }
+.home .cl-6 { --x: 20%; --y: 61%; --w: 28%; --r: -3deg; --z: 4; --rot: -4deg; }
+.home .cl-7 { --x: 52%; --y: 63%; --w: 28%; --r: 5deg; --z: 6; --rot: 3deg; }
+
+/* Branches weave between the prints. Overrides the exhibit placement that
+   .home .branch-main / .branch-sprig give every branch (globals). The svg
+   turns in CSS; HomeMotion only draws its stem and opens its leaves. */
+.home .collage .branch {
+  top: var(--bt);
+  right: var(--br, auto);
+  bottom: auto;
+  left: var(--bl, auto);
+  z-index: var(--bz);
+  width: var(--bw);
+  transform: rotate(var(--ba));
+}
+
+/* left edge, between the two left prints */
+.home .collage .cl-branch-a { --bt: 6%; --bl: -4%; --bw: 13%; --ba: -6deg; --bz: 3; }
+/* a sprig rising from behind the centre print */
+.home .collage .cl-branch-b { --bt: -3%; --bl: 41%; --bw: 15%; --ba: 8deg; --bz: 1; }
+/* right edge, over one print and under two */
+.home .collage .cl-branch-c { --bt: 30%; --br: -3%; --bw: 12%; --ba: 7deg; --bz: 4; }
+
+/* Anti-flash for the board (the copy is covered by the globals rules): hidden
+   before first paint while html.home-wait is on, revealed by CSS after 2s if
+   the bundle never arrives. */
+html.home-wait .home .cl-deal,
+html.home-wait .home .collage .branch {
+  opacity: 0;
+  animation: home-wait-fade 1ms 2s forwards;
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .home .hero .hero-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr);
+    gap: var(--space-lg);
+    padding-block: var(--space-lg);
+  }
+
+  .home .collage {
+    width: min(100%, calc((100svh - 120px) / 1.08));
+  }
+}
+
+/* --- story strip --------------------------------------------------------------- */
+
+/* Overrides .story-band (globals: space-3xl padding) and .home.deck-on
+   .story-band (a full-screen pinned scene): the band is now a compact strip
+   after the products, never pinned. */
+.home .story-band.story-strip,
+.home.deck-on .story-band.story-strip {
+  display: block;
+  min-height: 0;
+  padding-block: clamp(48px, 7vw, 88px);
+}
+
+/* Overrides .home .story-band h2 (a display size for the pinned scene). */
+.home .story-band.story-strip h2 {
+  max-width: 22ch;
+  font-size: clamp(1.75rem, 1.15rem + 2.5vw, 3.25rem);
+  line-height: 1.06;
+}
+
+/* --- grove: the tree through the product sections ---------------------------------- */
+
+/* The tree's svg sits behind everything in the grove (negative z inside an
+   isolated box, so above the page background). */
+.home .grove {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+.home .home-tree {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Overrides the 5-unit stroke of .stem / .stem-shadow (globals). */
+.home .home-tree .tree-trunk {
+  stroke-width: 5;
+}
+
+.home .home-tree .tree-limb {
+  stroke-width: 3.5;
+}
+
+@media (min-width: 900px) {
+  .home .home-tree .tree-trunk {
+    stroke-width: 7;
+  }
+
+  .home .home-tree .tree-limb {
+    stroke-width: 4.5;
+  }
+}
+
+/* homeTree opens a leaf by writing its transform; the origin is its base. */
+.home .home-tree .leaf-grow {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.home .home-tree .cut-vein {
+  stroke-width: 2;
+  opacity: 0.55;
+}
+
+/* Each main branch stands on the side the trunk runs, so a limb can reach its
+   bloom: the left gutter in one column, the centre gutter in two. Overrides
+   the alternating sides of .home .exhibit:nth-child(even) .branch-main /
+   .branch-sprig (globals); placement of the frames is unchanged. */
+@media (max-width: 899px) {
+  .home .exhibits .exhibit:nth-child(n) .branch-main {
+    right: auto;
+    left: -24%;
+  }
+
+  .home .exhibits .exhibit:nth-child(n) .branch-sprig {
+    right: -20%;
+    left: auto;
+  }
+}
+
+@media (min-width: 900px) {
+  .home .exhibits .exhibit:nth-child(odd) .branch-main {
+    right: -24%;
+    left: auto;
+  }
+
+  .home .exhibits .exhibit:nth-child(odd) .branch-sprig {
+    right: auto;
+    left: -20%;
+  }
+
+  .home .exhibits .exhibit:nth-child(even) .branch-main {
+    right: auto;
+    left: -24%;
+  }
+
+  .home .exhibits .exhibit:nth-child(even) .branch-sprig {
+    right: -20%;
+    left: auto;
+  }
+}
+
+/* --- exhibit plates ------------------------------------------------------------------ */
+
+/* Overrides .home .exhibit-plate h3 margin (globals). */
+.home .exhibit .exhibit-plate h3 {
+  margin-bottom: 12px;
+}
+
+/* The price as a swing tag and the sizes as stitched stamps, centred under the name. */
+.home .plate-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+}
