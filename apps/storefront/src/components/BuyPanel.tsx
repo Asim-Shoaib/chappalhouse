@@ -1,9 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { formatPkr, categoryLabel, type Product } from '@/lib/product'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
+import { formatPkr, categoryLabel, thumbUrl, type Product } from '@/lib/product'
 import { track } from '@/lib/analytics'
+import { flyToCart } from '@/lib/flyToCart'
 import { useCart } from './CartProvider'
+import { SizePicker } from './ui/SizeChips'
+import { announce } from './Keyboard'
 
 export function BuyPanel({
   product,
@@ -12,7 +16,7 @@ export function BuyPanel({
   product: Product
   whatsappNumber: string
 }) {
-  const { add } = useCart()
+  const { add, itemCount } = useCart()
   // Preselect when there is only one size to choose — saves a tap and makes
   // the Add button live immediately.
   const [selected, setSelected] = useState<number | null>(
@@ -30,6 +34,17 @@ export function BuyPanel({
     ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
     : null
   const [added, setAdded] = useState(false)
+  // Counts adds so the "Added" stamp lands again on every add, not just the first.
+  const [stamps, setStamps] = useState(0)
+  const still = useReducedMotion()
+  const cover = product.images[0]
+  // Read out once the add has rendered, so the count is the cart's real one.
+  const said = useRef('')
+  useEffect(() => {
+    if (!said.current) return
+    announce(`${said.current} ${itemCount} ${itemCount === 1 ? 'item' : 'items'}.`)
+    said.current = ''
+  }, [stamps, itemCount])
 
   return (
     <>
@@ -38,35 +53,52 @@ export function BuyPanel({
         {selected && <span className="field-hint">Size {selected} selected</span>}
       </p>
 
-      <div className="sizes" role="group" aria-label="Available sizes">
-        {product.variants.map((v) => (
-          <button
-            key={v.size}
-            type="button"
-            className="size-chip"
-            data-selected={selected === v.size}
-            aria-pressed={selected === v.size}
-            onClick={() => {
-              setSelected(v.size)
-              track('size_selected', { slug: product.slug, size: v.size })
-            }}
-          >
-            {v.size}
-          </button>
-        ))}
-      </div>
+      <SizePicker
+        sizes={product.variants.map((v) => v.size)}
+        value={selected}
+        onChange={(size) => {
+          setSelected(size)
+          track('size_selected', { slug: product.slug, size })
+        }}
+      />
 
       <button
-        className="button"
+        className="button pdp-add"
         type="button"
         disabled={selected === null}
-        onClick={() => {
+        data-added={added || undefined}
+        onClick={async (event) => {
           if (selected === null) return
-          add(product.slug, selected)
+          const size = selected
+          // The flight starts on this press, from the photo being shown, passes
+          // behind this button and lands in the header bag; the add waits for it
+          // so the bag bumps as the shoe arrives (CartLink). flyToCart never
+          // throws and resolves at once under reduced motion.
+          const button = event.currentTarget
+          const shown = Array.from(document.querySelectorAll<HTMLImageElement>('.pdp-frame img')).pop()
+          if (shown) await flyToCart(shown, shown.currentSrc || shown.src, button)
+          else if (cover) await flyToCart(button, thumbUrl(cover))
+          said.current = `Added ${product.name}, size ${size}, to your cart.`
+          add(product.slug, size)
           setAdded(true)
+          setStamps((n) => n + 1)
         }}
       >
-        {added ? 'Added to cart' : 'Add to cart'}
+        <motion.span
+          key={stamps}
+          className="pdp-add-label"
+          initial={added && !still ? { opacity: 0, scale: 1.6, rotate: -12 } : false}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 0.34, ease: [0.34, 1.56, 0.64, 1] }}
+        >
+          {added && (
+            <svg className="pdp-add-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <circle cx="8" cy="8" r="8" />
+              <path d="M4.6 8.3l2.2 2.2 4.6-4.8" />
+            </svg>
+          )}
+          {added ? 'Added to cart' : 'Add to cart'}
+        </motion.span>
       </button>
       {!selected && <p className="button-note">Choose a size to add this pair.</p>}
       {href && (

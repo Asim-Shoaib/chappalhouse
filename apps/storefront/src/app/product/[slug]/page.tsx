@@ -10,6 +10,10 @@ import { Recommendations } from '@/components/Recommendations'
 import { recommendProducts } from '@/lib/recommendations'
 import { ProductDetails } from '@/components/ProductDetails'
 import { RecentlyViewed } from '@/components/RecentlyViewed'
+import { PriceTag } from '@/components/ui/PriceTag'
+import { PdpMotion } from '@/components/PdpMotion'
+import { PaperWait } from '@/components/PaperWait'
+import { Branch } from '@/components/Branch'
 
 export async function generateStaticParams() {
   const products = await getProducts()
@@ -74,8 +78,15 @@ export default async function ProductPage({
         }}
       />
 
-      <div className="pdp">
+      {/* Keyed so a jump to another pair remounts the intro: its split title
+          must never be handed a new product name by React. */}
+      <div className="pdp" key={product.slug}>
+        <PaperWait />
+        <PdpMotion />
         <ProductViewTracker slug={product.slug} category={product.category} />
+        {/* Decorative vines, drawn down the page by PdpMotion. Zero-height
+            anchors (.pdp-anchor) pin them beside a block without moving it. */}
+        <Branch seed={`${product.slug}:gap`} kind="main" className="branch-hang pdp-vine pdp-vine-gap" />
         <div className="pdp-media">
           <Gallery
             images={product.images}
@@ -87,17 +98,25 @@ export default async function ProductPage({
         </div>
 
         <div>
-          <p className="eyebrow">{label}</p>
-          <h1>{product.name}</h1>
-          <p className="pdp-price">{formatPkr(product.pricePaisa)}</p>
+          <p className="eyebrow" data-enter="">{label}</p>
+          <h1 data-enter="">{product.name}</h1>
+          <p className="pdp-price" data-enter="">
+            <PriceTag paisa={product.pricePaisa} size="lg" />
+          </p>
 
           <BuyPanel
             product={product}
             whatsappNumber={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ''}
           />
 
+          <div className="pdp-anchor" aria-hidden="true">
+            <Branch seed={`${product.slug}:details`} kind="sprig" className="branch-hang pdp-vine pdp-vine-details" />
+          </div>
           <ProductDetails category={product.category} />
 
+          <div className="pdp-anchor" aria-hidden="true">
+            <Branch seed={`${product.slug}:trust`} kind="main" className="branch-hang pdp-vine pdp-vine-trust" />
+          </div>
           <ul className="trust">
             <li>Cash on delivery across Pakistan</li>
             <li>We confirm every order by WhatsApp before dispatch</li>
@@ -105,6 +124,10 @@ export default async function ProductPage({
             <li>Flat Rs 250 delivery estimate</li>
           </ul>
         </div>
+      </div>
+      <div className="pdp-anchor" aria-hidden="true">
+        <Branch seed={`${product.slug}:recs`} kind="main" className="branch-hang pdp-vine pdp-vine-recs" />
+        <Branch seed={`${product.slug}:tuck`} kind="sprig" className="branch-hang pdp-vine pdp-vine-tuck" />
       </div>
       <Recommendations products={recommendations} source={`product:${product.slug}`} />
       <RecentlyViewed products={await getProducts()} currentSlug={product.slug} />

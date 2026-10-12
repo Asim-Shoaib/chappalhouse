@@ -1,0 +1,723 @@
+/* Paper-craft look for the product, cart, checkout and policy pages.
+   Imported by PdpMotion, CommerceMotion and InfoMotion. Rest poses use the
+   individual `rotate` property, so GSAP (which writes `transform`) composes
+   with them instead of fighting them. Shadows are hard offsets, never blurs.
+   Overrides of globals.css rules win by specificity, not by order. */
+
+/* --- shared ----------------------------------------------------------------------- */
+
+/* Anti-flash hold (components/PaperWait.tsx). Released by the motion
+   component in the same task that writes the start states; CSS lets go after
+   2s if the bundle never arrives. */
+@keyframes paper-wait-show {
+  to {
+    visibility: visible;
+  }
+}
+
+html.paper-wait .pdp [data-enter],
+html.paper-wait .pdp .pdp-tape,
+html.paper-wait .pdp .pdp-branch,
+html.paper-wait .shell .pdp-vine,
+html.paper-wait .pdp .trust li,
+html.paper-wait .pdp .product-details details,
+html.paper-wait .info-sheet > * {
+  visibility: hidden;
+  animation: paper-wait-show 1ms 2s forwards;
+}
+
+/* Split headings: char spans cannot kern, so the unsplit text does not either. */
+.pdp h1,
+.info-sheet h1,
+.commerce-scope h1 {
+  font-kerning: none;
+  font-variant-ligatures: none;
+}
+
+/* Disclosures unfold from their top edge like folded paper. The text is
+   always in the HTML; only the reveal moves. */
+@keyframes paper-unfold {
+  from {
+    opacity: 0;
+    transform: perspective(700px) rotateX(-65deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.product-details details[open] > :not(summary),
+.info-faq details[open] > :not(summary) {
+  transform-origin: 50% 0;
+  animation: paper-unfold 420ms var(--ease-out-soft) both;
+}
+
+/* --- product page ----------------------------------------------------------------- */
+
+.pdp-stage {
+  position: relative;
+}
+
+/* The main photo is a framed portrait hung on the board: a cut-paper
+   moulding (tan, with a light and a dark bevel band), a cream mat whose inner
+   edge is cut on a bevel, the photo whole inside it, a nameplate on the
+   bottom rail, and a cord to a nail above. All of it is static paint
+   (inset/spread shadows take no layout); only the cord (.pdp-tape) moves. */
+.pdp .pdp-sheet {
+  --mould: clamp(12px, 2.4vw, 22px);
+  --mat: clamp(10px, 2vw, 20px);
+  position: relative;
+  z-index: 1;
+  padding: calc(var(--mould) + var(--mat));
+  padding-bottom: calc(var(--mould) + var(--mat) + clamp(14px, 2.4vw, 22px));
+  border-radius: 2px;
+  background: var(--tan);
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--invert-surface) 55%, var(--tan)),
+    inset 0 0 0 5px color-mix(in srgb, #fff 22%, var(--tan)),
+    inset 0 0 0 7px color-mix(in srgb, var(--invert-surface) 30%, var(--tan)),
+    inset 0 0 0 var(--mould) var(--tan),
+    inset 0 0 0 calc(var(--mould) + 1px) color-mix(in srgb, var(--invert-surface) 45%, var(--tan)),
+    inset 0 0 0 calc(var(--mould) + var(--mat)) var(--paper-raised),
+    7px 9px 0 var(--hard-shadow);
+  rotate: -0.4deg;
+}
+
+/* Bevel of the mat opening: a light edge on the top and left, a shade on the
+   bottom and right, drawn around the photo box. */
+.pdp .pdp-sheet .pdp-frame {
+  max-height: calc(100svh - 190px);
+  touch-action: pan-y pinch-zoom;
+  border: 0;
+  box-shadow:
+    -2px -2px 0 color-mix(in srgb, var(--paper-raised) 40%, #fff),
+    2px 2px 0 color-mix(in srgb, var(--line) 80%, var(--ink-soft)),
+    0 0 0 3px color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+/* Engraved nameplate centred on the bottom rail. Decorative: the name is the h1. */
+.pdp-plate {
+  position: absolute;
+  bottom: calc(var(--mould) * 0.5 - 2px);
+  left: 50%;
+  z-index: 2;
+  max-width: 60%;
+  overflow: hidden;
+  padding: 2px 12px;
+  border: 1px solid color-mix(in srgb, var(--invert-surface) 45%, var(--tan));
+  border-radius: 2px;
+  background: linear-gradient(180deg, color-mix(in srgb, #fff 45%, var(--tan)), color-mix(in srgb, #fff 18%, var(--tan)));
+  box-shadow: 1px 2px 0 var(--plate-shadow);
+  color: #2a1d10;
+  font-family: var(--serif);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.14em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+/* The cord and nail the portrait hangs from (the old tape node, so the
+   intro still "hangs" it: PdpMotion fades and swings it in). */
+.pdp-tape {
+  position: absolute;
+  top: clamp(-40px, -4vw, -28px);
+  left: 32%;
+  z-index: 0;
+  display: block;
+  width: 36%;
+  height: clamp(28px, 4vw, 40px);
+  background: var(--ink-soft);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolyline points='2,100 50,6 98,100' fill='none' stroke='%23000' stroke-width='2.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolyline points='2,100 50,6 98,100' fill='none' stroke='%23000' stroke-width='2.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  transform-origin: 50% 0;
+  pointer-events: none;
+}
+
+.pdp-stage::before {
+  content: '';
+  position: absolute;
+  top: clamp(-46px, -4.6vw, -34px);
+  left: calc(50% - 6px);
+  z-index: 2;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, #fff 55%, var(--tan)), var(--invert-surface) 75%);
+  box-shadow: 2px 3px 0 color-mix(in srgb, var(--hard-shadow) 50%, transparent);
+}
+
+/* Room above the portrait for the cord and nail. */
+.pdp-media {
+  padding-top: clamp(34px, 4.6vw, 48px);
+}
+
+/* Phones: a sprig climbs over the lower right corner of the mount, clear of
+   the arrow and the counter. Desktop: the tall branch grows from behind the
+   frame into the 64px gap between the columns. Leaves reach about 20px past
+   the svg box, so neither may sit further out than this (no page scroll). */
+.pdp-branch {
+  position: absolute;
+  z-index: 2;
+}
+
+.pdp-branch-main {
+  display: none;
+}
+
+.pdp-branch-sprig {
+  right: -4px;
+  bottom: 10%;
+  width: 50px;
+}
+
+@media (min-width: 860px) {
+  .pdp-branch-main {
+    display: block;
+    z-index: 0;
+    right: -44px;
+    bottom: -2%;
+    width: 64px;
+  }
+
+  .pdp-branch-sprig {
+    display: none;
+  }
+}
+
+/* Vines that hang from the top of the page and from the blocks of the buy
+   column and grow down as the reader scrolls (PdpMotion, scrubBranch). All
+   sit behind the page (z-index -1: frames, thumbs and cards cover them) and
+   only in empty ground: the 64px gutter between the columns, the right end of
+   the "You may also like" heading row, the shell padding on phones. Leaves
+   reach about 0.3 x width past either side of the svg box; every offset below
+   keeps that footprint off text and inside the page (no sideways scroll).
+   .pdp-anchor is a zero-height block, so it moves nothing. */
+.pdp {
+  position: relative;
+}
+
+.pdp-anchor {
+  position: relative;
+  height: 0;
+}
+
+.pdp-vine {
+  position: absolute;
+  z-index: -1;
+  display: none;
+}
+
+@media (min-width: 860px) {
+  .pdp-vine-gap,
+  .pdp-vine-details,
+  .pdp-vine-trust,
+  .pdp-vine-recs {
+    display: block;
+  }
+
+  /* From the top of the column gutter, beside the cord and the frame. */
+  .pdp-vine-gap {
+    top: calc(var(--space-2xl) + 40px);
+    left: calc((100% - 64px) * 1.1 / 2.1 + 8px);
+    width: 44px;
+  }
+
+  /* From the top left corner of the details and of the trust stamps, out
+     into the gutter. */
+  .pdp-vine-details,
+  .pdp-vine-trust {
+    top: 6px;
+    left: -54px;
+    width: 40px;
+  }
+
+  .pdp-vine-trust {
+    top: 2px;
+  }
+
+  /* Over the empty right end of the heading row, behind the first cards. */
+  .pdp-vine-recs {
+    top: calc(var(--space-2xl) * 0.5);
+    right: 6px;
+    width: 46px;
+  }
+}
+
+/* Phones: one short sprig in the right shell padding above the cards. */
+@media (max-width: 859.98px) {
+  .pdp-vine-tuck {
+    top: calc(var(--space-xl) * 0.5);
+    right: -16px;
+    display: block;
+    width: 20px;
+  }
+}
+
+/* Thumbs are small prints: photo whole on a mat, a hard shadow, a crooked
+   rest. Hover lifts one; the active print presses down and gets a stamp. */
+.gallery .thumbs {
+  gap: 12px;
+  padding: 6px 4px 4px 0;
+}
+
+.gallery .thumb {
+  position: relative;
+  padding: 4px;
+  overflow: visible;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  box-shadow: 3px 3px 0 var(--hard-shadow);
+  opacity: 1;
+  rotate: -1.2deg;
+  transition: transform 300ms var(--ease-out-soft);
+}
+
+.gallery li:nth-child(even) .thumb {
+  rotate: 1deg;
+}
+
+.gallery .thumb img {
+  object-fit: contain;
+  background: var(--photo-mat);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gallery .thumb:hover {
+    opacity: 1;
+    transform: translate(-1px, -3px);
+  }
+}
+
+.gallery .thumb[data-active='true'] {
+  border-color: var(--accent-surface);
+  box-shadow: 1px 1px 0 var(--hard-shadow);
+  transform: translate(2px, 2px);
+}
+
+.gallery .thumb::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--tan);
+  box-shadow: 1px 1px 0 var(--hard-shadow);
+  opacity: 0;
+  transform: scale(0.3) rotate(-30deg);
+  transition:
+    transform 350ms var(--ease-out-soft),
+    opacity 200ms var(--ease-out-soft);
+}
+
+.gallery .thumb[data-active='true']::after {
+  opacity: 1;
+  transform: none;
+}
+
+/* Price: the manila tag, hung off the title. */
+.pdp .pdp-price {
+  margin: 10px 0 30px;
+  font-size: inherit;
+}
+
+.pdp .size-picker {
+  margin-bottom: 26px;
+}
+
+.pdp .pdp-add {
+  justify-content: center;
+  min-width: 14em;
+}
+
+.pdp-add-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pdp-add-check {
+  width: 18px;
+  height: 18px;
+  rotate: -8deg;
+}
+
+.pdp-add-check circle {
+  fill: var(--tan);
+}
+
+.pdp-add-check path {
+  fill: none;
+  stroke: var(--invert-surface);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Added: a stitched line inside the face, like a stamp that has been pressed. */
+.pdp .pdp-add[data-added]::after {
+  outline: 1px dashed color-mix(in srgb, var(--on-accent) 55%, transparent);
+  outline-offset: -5px;
+}
+
+/* Trust items as stitched stamps on hard shadows, a little crooked. */
+.pdp .trust {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 14px 16px;
+  padding-top: 0;
+  border-top: 0;
+  color: var(--ink);
+}
+
+.pdp .trust li {
+  padding: 12px 14px 12px 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  outline: 1px dashed color-mix(in srgb, var(--tan) 85%, transparent);
+  outline-offset: -5px;
+  box-shadow: 3px 3px 0 var(--hard-shadow);
+  line-height: 1.35;
+  rotate: -0.8deg;
+}
+
+.pdp .trust li:nth-child(even) {
+  rotate: 0.7deg;
+}
+
+.pdp .trust li::before {
+  top: 50%;
+  left: 13px;
+  width: 10px;
+  height: 10px;
+  box-shadow: 1px 1px 0 var(--hard-shadow);
+  translate: 0 -50%;
+}
+
+/* --- cart -------------------------------------------------------------------------- */
+
+/* Each line is a paper slip with a stitched border on a hard shadow. */
+.cart-scope .cart-items {
+  position: relative; /* AnimatePresence popLayout positions the leaving slip against this */
+  display: grid;
+  gap: 18px;
+  border-top: 0;
+}
+
+.cart-scope .cart-slip {
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  outline: 1px dashed color-mix(in srgb, var(--tan) 60%, transparent);
+  outline-offset: -7px;
+  box-shadow: 4px 5px 0 var(--hard-shadow);
+}
+
+.cart-scope .cart-image {
+  display: block;
+  padding: 4px;
+  overflow: visible;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: 2px 2px 0 var(--hard-shadow);
+  aspect-ratio: auto;
+  rotate: -1.5deg;
+}
+
+.cart-scope .cart-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  background: var(--photo-mat);
+}
+
+.cart-scope .cart-line-total {
+  padding-top: 4px;
+  font-weight: 400;
+}
+
+/* Quantity buttons are stamps: face and shadow are pseudo-elements so a press
+   is transform only (the face steps onto its shadow, the shadow stays). */
+.cart-scope .qty {
+  /* 44px buttons, 40px faces (inset 2px below): the look of 40px stamps 6px
+     apart with a finger-sized target. */
+  grid-template-columns: 44px 3ch 44px;
+  gap: 2px;
+  border: 0;
+  background: none;
+}
+
+.cart-scope .qty button {
+  position: relative;
+  isolation: isolate;
+  min-height: 44px;
+  background: transparent;
+  transition: transform 90ms var(--ease-out-soft);
+}
+
+.cart-scope .qty button::before,
+.cart-scope .qty button::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.cart-scope .qty button::before {
+  z-index: -2;
+  background: var(--hard-shadow);
+  transform: translate(2px, 2px);
+  transition: transform 90ms var(--ease-out-soft);
+}
+
+.cart-scope .qty button::after {
+  z-index: -1;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  outline: 1px dashed color-mix(in srgb, var(--tan) 80%, transparent);
+  outline-offset: -4px;
+}
+
+.cart-scope .qty button:active:not(:disabled) {
+  transform: translate(2px, 2px);
+}
+
+.cart-scope .qty button:active:not(:disabled)::before {
+  transform: none;
+}
+
+.cart-scope .qty button:disabled {
+  color: var(--ink-soft);
+  opacity: 0.45;
+}
+
+.cart-scope .qty button:disabled::before {
+  opacity: 0;
+}
+
+.qty-count {
+  display: inline-block;
+}
+
+/* The summary is a receipt: plain paper, dashed rules, a torn bottom edge cut
+   with a mask. The hard shadow is a drop-shadow on the aside, so it follows
+   the teeth. */
+.cart-scope .cart-receipt {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  filter: drop-shadow(5px 6px 0 var(--hard-shadow));
+}
+
+.cart-scope .cart-receipt::before {
+  display: none;
+}
+
+.cart-receipt-paper {
+  --tooth: 9px;
+  padding: 26px 24px calc(26px + var(--tooth));
+  background: var(--paper-raised);
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth) + 1px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / calc(var(--tooth) * 2) var(--tooth) repeat-x;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth) + 1px) no-repeat,
+    conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / calc(var(--tooth) * 2) var(--tooth) repeat-x;
+}
+
+.cart-scope .cart-receipt h2 {
+  padding-bottom: 12px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--ink-soft) 45%, transparent);
+  text-align: center;
+}
+
+.cart-scope .cart-receipt dl div {
+  border-bottom: 1px dashed color-mix(in srgb, var(--ink-soft) 30%, transparent);
+}
+
+.cart-scope .cart-receipt .order-total {
+  border-top: 0;
+  border-bottom: 0;
+  font-size: var(--text-base);
+}
+
+/* Empty: a small cut-paper planting on a card, and the way back. */
+.cart-scope .cart-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-md);
+  max-width: 520px;
+  padding: var(--space-xl) var(--space-md);
+  border-radius: var(--radius);
+  box-shadow: 6px 7px 0 var(--hard-shadow);
+  text-align: center;
+}
+
+.cart-scope .cart-empty p {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--text-lg);
+}
+
+.cart-empty-art {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 170px;
+  padding-inline: 24px;
+  border-bottom: 3px solid color-mix(in srgb, var(--tan) 62%, var(--invert-surface));
+}
+
+.cart-empty-art .branch-main {
+  width: 34px;
+}
+
+.cart-empty-art .branch-sprig {
+  width: 52px;
+}
+
+.cart-empty-art .branch:last-child {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 720px) {
+  .cart-scope .cart-slip {
+    grid-template-columns: 84px minmax(0, 1fr);
+    padding: 14px;
+  }
+}
+
+/* --- policy pages ----------------------------------------------------------------- */
+
+/* The article is a sheet pinned to the board: tape at the top, hard shadow. */
+.info-wrap {
+  padding-block: var(--space-2xl) var(--space-3xl);
+}
+
+.info-wrap .info-sheet {
+  position: relative;
+  max-width: 760px;
+  margin-inline: auto;
+  padding: clamp(36px, 6vw, 64px) clamp(20px, 5.5vw, 64px) clamp(36px, 6vw, 72px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  box-shadow: 6px 7px 0 var(--hard-shadow);
+}
+
+.info-tape {
+  position: absolute;
+  top: -13px;
+  left: calc(50% - 60px);
+  display: block;
+  width: 120px;
+  height: 26px;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper-raised) 78%, transparent);
+  rotate: -2.5deg;
+  pointer-events: none;
+}
+
+.info-wrap .info-sheet h2 {
+  padding-top: var(--space-md);
+  border-top: 1px dashed color-mix(in srgb, var(--tan) 70%, transparent);
+}
+
+.info-wrap .info-sheet .lede {
+  margin-bottom: var(--space-xl);
+}
+
+/* The branch hangs from the top of the margin and grows down beside the
+   sheet: a flipped Branch, with its offset shadows flipped back so the light
+   still falls from the top left. Desktop only, inside the gutter. */
+.info-branch {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .info-branch {
+    position: absolute;
+    top: 48px;
+    left: -132px;
+    display: block;
+    width: 100px;
+    transform: scaleY(-1);
+  }
+
+  .info-branch .cut-shadow {
+    transform: translate(3px, -3px);
+  }
+
+  .info-branch .stem-shadow {
+    transform: translate(2px, -3px);
+  }
+}
+
+/* FAQ: every question is a folded card; the answer unfolds under it. */
+.info-wrap .info-faq details {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: 3px 3px 0 var(--hard-shadow);
+}
+
+.info-wrap .info-faq summary {
+  position: relative;
+  min-height: 44px;
+  padding: 16px 56px 16px 18px;
+  font-family: var(--serif);
+  font-size: var(--text-md);
+  letter-spacing: 0;
+  list-style: none;
+}
+
+.info-wrap .info-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.info-wrap .info-faq summary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  margin-top: -12px;
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--invert-surface) 0 0) center / 10px 2px no-repeat,
+    linear-gradient(var(--invert-surface) 0 0) center / 2px 10px no-repeat,
+    var(--tan);
+  box-shadow: 1px 1px 0 var(--hard-shadow);
+  transition: transform 320ms var(--ease-out-soft);
+}
+
+.info-wrap .info-faq details[open] summary::after {
+  transform: rotate(135deg);
+}
+
+.info-wrap .info-faq summary:focus-visible {
+  outline: 2px solid var(--tan);
+  outline-offset: 2px;
+}
+
+.info-wrap .info-faq details p {
+  margin: 0;
+  padding: 0 18px 18px;
+}
