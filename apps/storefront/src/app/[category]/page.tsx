@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getProducts, type Category } from '@/lib/catalog'
 import { CatalogControls } from '@/components/CatalogControls'
+import { CatalogHeroMotion } from '@/components/CatalogMotion'
+import { PaperWait } from '@/components/PaperWait'
+import { Branch } from '@/components/Branch'
 import { CategoryViewTracker } from '@/components/Analytics'
 
 const ROUTES: Record<string, { category: Category; title: string; blurb: string }> = {
@@ -51,20 +54,26 @@ export default async function CategoryPage({
 
   return (
     <>
-      <section className="hero">
+      <section className="hero cat-hero">
         <CategoryViewTracker category={route.category} />
+        <CatalogHeroMotion key={category} />
+        <PaperWait />
         <div className="shell hero-inner">
           <div className="hero-copy">
             <p className="eyebrow">{products.length} designs</p>
             <h1>{route.title}</h1>
             <p>{route.blurb}</p>
           </div>
+          <div className="cat-branches" aria-hidden="true">
+            <Branch seed={category} kind="main" />
+            <Branch seed={category} kind="sprig" />
+          </div>
         </div>
       </section>
 
       <section className="section">
         <div className="shell">
-          <CatalogControls products={products} />
+          <CatalogControls key={category} products={products} />
         </div>
       </section>
     </>

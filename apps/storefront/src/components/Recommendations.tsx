@@ -1,4 +1,5 @@
 import { ProductCard } from './ProductCard'
+import { CardGrid } from './CatalogMotion'
 import { RecommendationTracker } from './Analytics'
 import type { Product } from '@/lib/product'
 
@@ -20,7 +21,7 @@ export function Recommendations({
         <div className="section-head">
           <h2 id="recommendations-title">You may also like</h2>
         </div>
-        <div className="grid">
+        <CardGrid>
           {products.map((product) => (
             <ProductCard
               key={product.slug}
@@ -29,7 +30,7 @@ export function Recommendations({
               recommendationSource={source}
             />
           ))}
-        </div>
+        </CardGrid>
     </section>
   )
 }

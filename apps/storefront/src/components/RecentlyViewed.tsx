@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ProductCard } from './ProductCard'
+import { CardGrid } from './CatalogMotion'
 import type { Product } from '@/lib/product'
 
 const key = 'chappal_recently_viewed'
@@ -21,7 +22,7 @@ export function RecentlyViewed({ products, currentSlug }: { products: Product[];
   return (
     <section className="section recently-viewed" aria-labelledby="recently-viewed-title">
       <div className="section-head"><h2 id="recently-viewed-title">Recently viewed</h2></div>
-      <div className="grid">{viewed.map((product) => <ProductCard key={product.slug} product={product} />)}</div>
+      <CardGrid>{viewed.map((product) => <ProductCard key={product.slug} product={product} />)}</CardGrid>
     </section>
   )
 }

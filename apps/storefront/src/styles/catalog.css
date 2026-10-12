@@ -1,0 +1,268 @@
+/* ==========================================================================
+   Catalog: the category pages and every product grid outside the homepage.
+   The homepage's framed-exhibit look at grid size: each pair is a print
+   pinned to the board (paper mat, the whole photo on --photo-mat, a strip of
+   tape, a hard offset shadow, a small rest tilt) with a cut-paper sprig
+   beside it, then the name, the manila price tag and the size stamps.
+   Complete and at rest without JS; components/CatalogMotion.tsx only animates
+   towards this pose. Tokens only, so both themes hold.
+   ========================================================================== */
+
+/* --- grid ----------------------------------------------------------------------- */
+
+/* 2 columns on phones, 3 at tablet, 4 from 1100px. The top padding leaves room
+   for the tape; overflow-x clip keeps a sprig or shadow at the outer column
+   from ever widening the page (overflow-y stays visible). */
+.pcard-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(40px, 6vw, 64px) clamp(14px, 3vw, 36px);
+  padding-top: 14px;
+  overflow-x: clip;
+}
+
+@media (min-width: 700px) {
+  .pcard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .pcard-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* The rest pose (--tilt, --tape) is seeded per product in ProductCard, so it
+   stays with the print when a filter moves it. Text never turns, so names and
+   prices stay aligned across a row. */
+.pcard-cell,
+.pcard {
+  min-width: 0;
+}
+
+/* --- card ----------------------------------------------------------------------- */
+
+.pcard-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+
+.pcard-link:focus-visible {
+  outline: 2px solid var(--tan);
+  outline-offset: 8px;
+}
+
+/* The frame takes 82% of the cell; the sprig stands in the remaining strip and
+   overlaps only the frame's outer edge, so nothing leaves the cell. */
+.pcard-stage {
+  position: relative;
+  width: 100%;
+  padding-inline: 4% 14%;
+}
+
+.pcard-flip .pcard-stage {
+  padding-inline: 14% 4%;
+}
+
+.pcard-lift {
+  position: relative;
+  z-index: 1;
+}
+
+.pcard-frame {
+  position: relative;
+  isolation: isolate;
+  transform: rotate(var(--tilt, 0deg));
+}
+
+.pcard-shadow {
+  position: absolute;
+  inset: 4px -4px -4px 4px;
+  z-index: -1;
+  display: block;
+  border-radius: var(--radius);
+  background: var(--hard-shadow);
+}
+
+.pcard-face {
+  display: block;
+  padding: clamp(6px, 1.8vw, 10px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+.pcard-face img,
+.pcard-face .card-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  background: var(--photo-mat);
+}
+
+.pcard-tape {
+  position: absolute;
+  top: -9px;
+  left: 32%;
+  z-index: 2;
+  display: block;
+  width: 36%;
+  height: clamp(15px, 2.2vw, 20px);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper-raised) 78%, transparent);
+  transform: rotate(var(--tape, -3deg));
+  pointer-events: none;
+}
+
+.pcard .branch {
+  position: absolute;
+  right: 0;
+  bottom: -2%;
+  z-index: 2;
+  width: 20%;
+}
+
+.pcard-flip .branch {
+  right: auto;
+  left: 0;
+}
+
+.pcard-name {
+  margin: clamp(14px, 2.4vw, 20px) 0 10px;
+  font-family: var(--serif);
+  font-size: var(--text-base);
+  line-height: 1.25;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* Price tag over the size stamps, both centred under the name. */
+.pcard-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+}
+
+/* The tag's string hangs 0.8em left of it; shift the pair so the tag itself reads centred. */
+.pcard-meta .price-tag {
+  margin-left: 0;
+  translate: 0.4em 0;
+}
+
+.pcard-meta .size-stamps {
+  justify-content: center;
+  gap: 5px;
+}
+
+/* Five stamps must fit one row in a 150px column at 360px. */
+.pcard-meta .size-stamps-sm .size-stamp-face {
+  min-width: 2.2em;
+  padding: 0.28em 0.3em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pcard-face {
+    transition: transform 300ms var(--ease-out-soft);
+  }
+
+  .pcard-link:hover .pcard-face {
+    transform: translate(-2px, -3px);
+  }
+
+  .pcard-link:hover .pcard-name {
+    text-decoration: underline;
+    text-decoration-color: var(--tan);
+    text-underline-offset: 4px;
+  }
+}
+
+/* --- category hero ---------------------------------------------------------------- */
+
+.cat-hero .hero-inner {
+  position: relative;
+}
+
+/* Split text: kerning and ligatures off so split and unsplit text have the same width. */
+.cat-hero h1 {
+  font-kerning: none;
+  font-variant-ligatures: none;
+}
+
+.cat-hero .cc {
+  transform-origin: 50% 85%;
+}
+
+/* A tall branch and a sprig grow up the right of the hero from its floor. */
+.cat-branches {
+  position: absolute;
+  right: var(--space-md);
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.cat-branches .branch-main {
+  width: clamp(46px, 7vw, 88px);
+}
+
+.cat-branches .branch-sprig {
+  width: clamp(30px, 4.4vw, 56px);
+  margin-right: -6px;
+  order: -1;
+}
+
+@media (max-width: 879px) {
+  .cat-hero .hero-copy {
+    padding-right: 72px;
+  }
+}
+
+/* --- controls ---------------------------------------------------------------------- */
+
+.catalog-controls .pselect {
+  min-width: 0;
+}
+
+@media (max-width: 520px) {
+  .catalog-controls .pselect-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* The sort list opens from the right column, so it hangs leftwards to stay on screen. */
+  .catalog-controls .pselect + .pselect .pselect-list {
+    right: 0;
+    left: auto;
+  }
+}
+
+/* --- hero anti-flash ------------------------------------------------------------ */
+
+/* components/PaperWait.tsx adds html.paper-wait before the hero paints;
+   CatalogHeroMotion lifts it once the drop-in start states are written. CSS
+   lets go after 2s if the bundle never arrives. */
+@keyframes cat-wait-show {
+  to {
+    visibility: visible;
+  }
+}
+
+html.paper-wait .cat-hero .hero-copy > *,
+html.paper-wait .cat-hero .cat-branches {
+  visibility: hidden;
+  animation: cat-wait-show 1ms 2s forwards;
+}
